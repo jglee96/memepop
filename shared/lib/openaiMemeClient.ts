@@ -1,7 +1,12 @@
 import type { PromptEnvelope } from "@/shared/security/promptPolicy";
+import {
+  buildDefaultMemePrompt,
+  buildEotteokharagoPrompt,
+  shouldRetryEotteokharagoOutput
+} from "@/shared/prompts";
 
 const OPENAI_RESPONSES_API_URL = "https://api.openai.com/v1/responses";
-const OPENAI_TIMEOUT_MS = 8_000;
+const OPENAI_TIMEOUT_MS = 15_000;
 
 interface OpenAIContentItem {
   text?: string;
@@ -34,35 +39,50 @@ export async function generateMemeWithOpenAI(envelope: PromptEnvelope): Promise<
   const timeout = setTimeout(() => controller.abort(), OPENAI_TIMEOUT_MS);
 
   try {
-    const response = await fetch(OPENAI_RESPONSES_API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`
-      },
-      body: JSON.stringify({
-        model,
-        temperature: 0.9,
-        max_output_tokens: 420,
-        instructions: envelope.systemPolicy,
-        input: buildUserPrompt(envelope)
-      }),
+    const firstAttempt = await requestGeneration({
+      apiKey,
+      model,
+      envelope,
+      strictMode: false,
       signal: controller.signal
     });
-
-    if (!response.ok) {
+    if (!firstAttempt.ok) {
       return { ok: false, code: "OPENAI_REQUEST_FAILED" };
     }
 
-    const payload = (await response.json()) as OpenAIResponsePayload;
-    const outputText = extractOutputText(payload);
-    if (!outputText) {
+    if (!firstAttempt.output) {
       return { ok: false, code: "OPENAI_EMPTY_OUTPUT" };
+    }
+
+    const shouldRetry =
+      envelope.memeSlug === "eotteokharago" &&
+      shouldRetryEotteokharagoOutput(envelope.userInput, firstAttempt.output);
+
+    if (!shouldRetry) {
+      return {
+        ok: true,
+        output: normalizeOutput(firstAttempt.output)
+      };
+    }
+
+    const secondAttempt = await requestGeneration({
+      apiKey,
+      model,
+      envelope,
+      strictMode: true,
+      signal: controller.signal
+    });
+
+    if (!secondAttempt.ok || !secondAttempt.output) {
+      return {
+        ok: true,
+        output: normalizeOutput(firstAttempt.output)
+      };
     }
 
     return {
       ok: true,
-      output: outputText.replace(/\n+/g, ", ").replace(/\s+/g, " ").trim()
+      output: normalizeOutput(secondAttempt.output)
     };
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
@@ -74,35 +94,52 @@ export async function generateMemeWithOpenAI(envelope: PromptEnvelope): Promise<
   }
 }
 
-function buildUserPrompt(envelope: PromptEnvelope): string {
-  const styleExampleBlock = envelope.styleExamples.length > 0 ? envelope.styleExamples.join("\n- ") : "(none)";
-  const compactLength = Array.from(envelope.userInput.replace(/\s+/g, "")).length;
-  const frontMutationRules =
-    compactLength >= 4
-      ? [
-          "Hard constraint: at least 70% of variants must modify syllables before the last two syllables.",
-          "Hard constraint: at least 12 variants must clearly mutate the beginning or middle part of the input.",
-          "Avoid low-quality pattern: only changing the ending (e.g., '배고프다구, 배고프다꼬').",
-          "Preferred direction: mutate stem + rhythm together (e.g., '배곺흐다고, 앱오프다고, 배꼬푸타고, 배구프라구')."
-        ].join("\n")
-      : "For short inputs, still vary beginning, middle, and ending as evenly as possible.";
-
-  return [
-    `Meme style context: ${envelope.styleContext}`,
-    "Style examples:",
-    `- ${styleExampleBlock}`,
-    `User input: ${envelope.userInput}`,
-    "Return exactly one line of comma + space separated Korean variants.",
-    "Make a long list (target 24 to 40 items).",
-    "The first item must be exactly the user input.",
-    "Keep pronunciation close to the original input.",
-    "Mutate across the whole phrase, not only the ending.",
-    "Do not repeat identical items.",
-    "Include at least 8 absurd playful variants with different literal meanings, similar in tone to '엉뜨켜라고' or '오픈카라고'.",
-    "Do not include explanations, labels, quotes, numbering, markdown, or URLs.",
-    frontMutationRules
-  ].join("\n");
+interface RequestGenerationInput {
+  apiKey: string;
+  model: string;
+  envelope: PromptEnvelope;
+  strictMode: boolean;
+  signal: AbortSignal;
 }
+
+type RequestGenerationResult = { ok: true; output: string | null } | { ok: false };
+
+async function requestGeneration(input: RequestGenerationInput): Promise<RequestGenerationResult> {
+  const response = await fetch(OPENAI_RESPONSES_API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${input.apiKey}`
+    },
+    body: JSON.stringify({
+      model: input.model,
+      temperature: input.strictMode ? 0.95 : 0.9,
+      max_output_tokens: input.strictMode ? 440 : 340,
+      instructions: input.envelope.systemPolicy,
+      input: buildUserPrompt(input.envelope, input.strictMode)
+    }),
+    signal: input.signal
+  });
+
+  if (!response.ok) {
+    return { ok: false };
+  }
+
+  const payload = (await response.json()) as OpenAIResponsePayload;
+  return { ok: true, output: extractOutputText(payload) };
+}
+
+function buildUserPrompt(envelope: PromptEnvelope, strictMode: boolean): string {
+  if (envelope.memeSlug === "eotteokharago") {
+    return buildEotteokharagoPrompt(envelope, { strict: strictMode });
+  }
+  return buildDefaultMemePrompt(envelope);
+}
+
+function normalizeOutput(output: string): string {
+  return output.replace(/\n+/g, ", ").replace(/\s+/g, " ").trim();
+}
+
 
 function extractOutputText(payload: OpenAIResponsePayload): string | null {
   if (typeof payload.output_text === "string" && payload.output_text.trim().length > 0) {

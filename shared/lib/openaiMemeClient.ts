@@ -43,7 +43,7 @@ export async function generateMemeWithOpenAI(envelope: PromptEnvelope): Promise<
       body: JSON.stringify({
         model,
         temperature: 0.9,
-        max_output_tokens: 220,
+        max_output_tokens: 420,
         instructions: envelope.systemPolicy,
         input: buildUserPrompt(envelope)
       }),
@@ -75,13 +75,32 @@ export async function generateMemeWithOpenAI(envelope: PromptEnvelope): Promise<
 }
 
 function buildUserPrompt(envelope: PromptEnvelope): string {
+  const styleExampleBlock = envelope.styleExamples.length > 0 ? envelope.styleExamples.join("\n- ") : "(none)";
+  const compactLength = Array.from(envelope.userInput.replace(/\s+/g, "")).length;
+  const frontMutationRules =
+    compactLength >= 4
+      ? [
+          "Hard constraint: at least 70% of variants must modify syllables before the last two syllables.",
+          "Hard constraint: at least 12 variants must clearly mutate the beginning or middle part of the input.",
+          "Avoid low-quality pattern: only changing the ending (e.g., '배고프다구, 배고프다꼬').",
+          "Preferred direction: mutate stem + rhythm together (e.g., '배곺흐다고, 앱오프다고, 배꼬푸타고, 배구프라구')."
+        ].join("\n")
+      : "For short inputs, still vary beginning, middle, and ending as evenly as possible.";
+
   return [
     `Meme style context: ${envelope.styleContext}`,
+    "Style examples:",
+    `- ${styleExampleBlock}`,
     `User input: ${envelope.userInput}`,
-    "Return only one line of comma-separated Korean variants.",
+    "Return exactly one line of comma + space separated Korean variants.",
+    "Make a long list (target 24 to 40 items).",
+    "The first item must be exactly the user input.",
     "Keep pronunciation close to the original input.",
-    "Include at least 2 absurd playful variants with different literal meanings, similar in tone to '엉뜨켜라고' or '오픈카라고'.",
-    "No explanation, no numbering, no markdown, no URLs."
+    "Mutate across the whole phrase, not only the ending.",
+    "Do not repeat identical items.",
+    "Include at least 8 absurd playful variants with different literal meanings, similar in tone to '엉뜨켜라고' or '오픈카라고'.",
+    "Do not include explanations, labels, quotes, numbering, markdown, or URLs.",
+    frontMutationRules
   ].join("\n");
 }
 

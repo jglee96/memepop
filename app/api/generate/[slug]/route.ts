@@ -69,6 +69,7 @@ export async function POST(request: NextRequest, { params }: RouteParams): Promi
   const promptEnvelope = buildPromptEnvelope({
     memeTitle: meme.title,
     memeInstructions: meme.template.instructions,
+    styleExamples: meme.examples,
     userInput: validation.sanitized
   });
 

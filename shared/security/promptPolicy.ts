@@ -8,18 +8,23 @@ Only return a short, comma-separated Korean variation list for the selected meme
 
 export interface PromptEnvelope {
   systemPolicy: string;
+  memeTitle: string;
   styleContext: string;
+  styleExamples: string[];
   userInput: string;
 }
 
 export function buildPromptEnvelope(input: {
   memeTitle: string;
   memeInstructions: string;
+  styleExamples: string[];
   userInput: string;
 }): PromptEnvelope {
   return {
     systemPolicy: SYSTEM_POLICY,
+    memeTitle: input.memeTitle,
     styleContext: `${input.memeTitle}: ${input.memeInstructions}`,
+    styleExamples: input.styleExamples,
     userInput: input.userInput
   };
 }

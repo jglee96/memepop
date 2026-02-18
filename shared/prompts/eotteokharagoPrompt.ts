@@ -18,50 +18,45 @@ export function buildEotteokharagoPrompt(
   const firstTwo = normalizedInput.slice(0, 2);
   const syllableCount = Array.from(normalizedInput).length;
 
-  const listLengthRule =
+  const lengthRule =
     syllableCount <= 3
-      ? "List length: 24 to 44 items."
+      ? "LEN: 24-44 items."
       : syllableCount <= 5
-        ? "List length: 22 to 34 items."
-        : "List length: 24 to 36 items.";
+        ? "LEN: 22-34 items."
+        : "LEN: 24-36 items.";
 
-  const structureRule =
+  const diversityRule =
     syllableCount <= 3
       ? [
           "DIVERSITY(short): rotate first syllable in >=12 items.",
-          "DIVERSITY(short): stretching allowed (e.g., 꼬오시다 style) if pronunciation stays close.",
-          "DIVERSITY(short): keep 받침 느낌 in many outputs when input has it.",
+          "DIVERSITY(short): sound-stretch allowed (e.g., 꼬오시다) if pronunciation remains close.",
           "DIVERSITY(short): no isolated jamo (ㅂ/ㅍ etc)."
         ].join(" ")
       : [
-          "DIVERSITY(long): mutate first 1-2 syllables in >=10 items.",
-          "DIVERSITY(long): mutate middle stem in >=10 items.",
-          "DIVERSITY(long): suffix-only edits <=35%.",
-          `DIVERSITY(long): do not over-fix \"${firstTwo}\"; diversify leading sound.`
+          "DIVERSITY(long): mutate first 1-2 syllables in >=12 items.",
+          "DIVERSITY(long): include >=4 items where beginning chunk is expanded by +1 syllable.",
+          `DIVERSITY(long): do not keep "${firstTwo}" fixed; vary leading sound.`,
+          "DIVERSITY(long): suffix-only edits <=30%."
         ].join(" ");
 
-  const strictBlock = options.strict
-    ? [
-        "RETRY: previous output low quality.",
-        "RETRY: increase beginning/middle diversity but keep phonetic closeness.",
-        "RETRY: if suffix-only heavy or jamo-broken, regenerate before final output."
-      ].join(" ")
+  const strictRule = options.strict
+    ? "RETRY: output was monotone; increase beginning/middle diversity while staying phonetically close."
     : "RETRY: off";
 
   return [
-    "TASK: Generate eotteokharago-style Korean phonetic variants.",
+    "TASK: generate eotteokharago-style Korean phonetic variants.",
     `INPUT: ${envelope.userInput}`,
     `STYLE: ${envelope.styleContext}`,
     `SEED: ${styleSeed}`,
     "FORMAT: exactly one line, comma+space separated variants.",
-    listLengthRule,
-    "HARD: first item = INPUT, no duplicates, Hangul syllable blocks only, no URL/markdown/labels.",
-    "PRIORITY: phonetic closeness > humor.",
-    "HUMOR: playful mishearing only when pronunciation stays close.",
-    "BAN: do not replace stem with unrelated objects (e.g., 로켓아프다고, 냉장고아프다고).",
-    `HOTSPOT: "${hotspot}" (beginning/middle sound core).`,
-    structureRule,
-    strictBlock
+    lengthRule,
+    "HARD: first item=INPUT; no duplicates; Hangul syllable blocks only; no URL/markdown/labels.",
+    "PRIORITY: phonetic similarity > humor.",
+    "HUMOR: only playful mishearing that still sounds close.",
+    "BAN: do not replace core stem with unrelated object nouns.",
+    `HOTSPOT: ${hotspot}`,
+    diversityRule,
+    strictRule
   ].join("\n");
 }
 
@@ -97,6 +92,7 @@ export function shouldRetryEotteokharagoOutput(userInput: string, output: string
   const basePrefix2 = normalizedInput.slice(0, 2);
   const prefix2Set = new Set<string>();
   const firstSyllableSet = new Set<string>();
+  let expandedPrefixMutationCount = 0;
 
   const cut = Math.max(1, normalizedInput.length - 2);
 
@@ -106,12 +102,11 @@ export function shouldRetryEotteokharagoOutput(userInput: string, output: string
     }
 
     const similarity = phoneticSimilarity(normalizedInput, variant);
-
-    if (similarity >= 0.4) {
+    if (similarity >= 0.36) {
       closeCount += 1;
     }
 
-    if (similarity < 0.2) {
+    if (similarity < 0.18) {
       farCount += 1;
     }
 
@@ -119,7 +114,7 @@ export function shouldRetryEotteokharagoOutput(userInput: string, output: string
       endingOnlyCount += 1;
     }
 
-    if (OBJECT_WORD_REGEX.test(variant) && similarity < 0.35) {
+    if (OBJECT_WORD_REGEX.test(variant) && similarity < 0.33) {
       objectLikeCount += 1;
     }
 
@@ -129,6 +124,10 @@ export function shouldRetryEotteokharagoOutput(userInput: string, output: string
 
     if (variant.length >= 1) {
       firstSyllableSet.add(variant.slice(0, 1));
+    }
+
+    if (variant.length > normalizedInput.length && variant.slice(0, 2) !== basePrefix2) {
+      expandedPrefixMutationCount += 1;
     }
   }
 
@@ -143,25 +142,34 @@ export function shouldRetryEotteokharagoOutput(userInput: string, output: string
     return true;
   }
 
-  if (objectLikeCount > 2) {
+  if (objectLikeCount > 1) {
     return true;
   }
 
   if (inputLength <= 3) {
-    if (firstSyllableSet.size < 6) {
-      return true;
-    }
-    return false;
+    return firstSyllableSet.size < 7;
   }
 
   const prefixChangedCount = nonFirst.filter((variant) => variant.slice(0, 2) !== basePrefix2).length;
   const prefixChangedRatio = prefixChangedCount / nonFirst.length;
 
-  if (prefix2Set.size < 4 || prefixChangedRatio < 0.35) {
+  const prefixSetThreshold = inputLength >= 6 ? 6 : 5;
+  const prefixChangedThreshold = inputLength >= 6 ? 0.5 : 0.45;
+  const endingOnlyThreshold = inputLength >= 6 ? 0.38 : 0.42;
+
+  if (prefix2Set.size < prefixSetThreshold || prefixChangedRatio < prefixChangedThreshold) {
     return true;
   }
 
-  if (endingOnlyRatio > 0.45) {
+  if (inputLength >= 6) {
+    if (expandedPrefixMutationCount < 2 && prefixChangedRatio < 0.6) {
+      return true;
+    }
+  } else if (expandedPrefixMutationCount < 1 && prefixChangedRatio < 0.55) {
+    return true;
+  }
+
+  if (endingOnlyRatio > endingOnlyThreshold) {
     return true;
   }
 

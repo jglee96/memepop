@@ -10,6 +10,13 @@ describe("eotteokharago prompt quality gate", () => {
     expect(shouldRetryEotteokharagoOutput("머리아프다고", output)).toBe(true);
   });
 
+  it("retries when long input keeps first chunk almost fixed", () => {
+    const output =
+      "점심뭐먹냐고, 점심머먹냐고, 점심모먹냐고, 점심뭐먹라고, 점심뭐묵냐고, 점심뭐먹냐구, 점심뭐먹냐고요, 점심뭐먹냐궁, 점심뭐먹냐고오, 점심뭐먹냐다고, 점심뭐먹냐구나, 점심뭐먹냐고나, 점심뭐먹냐고요잉, 점심뭐먹냐고잉, 잠심뭐먹냐고, 점슴뭐먹냐고, 점심모먹냐구, 점심머묵냐고, 점심뭐묵냐구, 점심뭐먹냐구요";
+
+    expect(shouldRetryEotteokharagoOutput("점심뭐먹냐고", output)).toBe(true);
+  });
+
   it("retries when object replacement drifts too far from pronunciation", () => {
     const output =
       "머리아프다고, 머리야프다고, 머랴프다고, 머리아푸다고, 머리얍프다고, 머리알프다고, 로켓아프다고, 냉장고아프다고, 헬리콥터아프다고, 우주선아프다고, 떡볶이아프다고, 고양이아프다고, 라자냐아프다고, 선풍기아프다고, 전기밥솥아프다고, 계산기아프다고, 샌드위치아프다고, 택배상자아프다고";

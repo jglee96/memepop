@@ -105,6 +105,7 @@ interface RequestGenerationInput {
 type RequestGenerationResult = { ok: true; output: string | null } | { ok: false };
 
 async function requestGeneration(input: RequestGenerationInput): Promise<RequestGenerationResult> {
+  const maxOutputTokens = estimateMaxOutputTokens(input.envelope.userInput, input.strictMode);
   const response = await fetch(OPENAI_RESPONSES_API_URL, {
     method: "POST",
     headers: {
@@ -113,8 +114,8 @@ async function requestGeneration(input: RequestGenerationInput): Promise<Request
     },
     body: JSON.stringify({
       model: input.model,
-      temperature: input.strictMode ? 0.95 : 0.9,
-      max_output_tokens: input.strictMode ? 440 : 340,
+      temperature: input.strictMode ? 0.9 : 0.82,
+      max_output_tokens: maxOutputTokens,
       instructions: input.envelope.systemPolicy,
       input: buildUserPrompt(input.envelope, input.strictMode)
     }),
@@ -139,7 +140,11 @@ function buildUserPrompt(envelope: PromptEnvelope, strictMode: boolean): string 
 function normalizeOutput(output: string): string {
   return output.replace(/\n+/g, ", ").replace(/\s+/g, " ").trim();
 }
-
+function estimateMaxOutputTokens(userInput: string, strictMode: boolean): number {
+  const length = Array.from(userInput.replace(/\s+/g, "")).length;
+  const base = length <= 3 ? 260 : length <= 5 ? 300 : 340;
+  return strictMode ? base + 60 : base;
+}
 
 function extractOutputText(payload: OpenAIResponsePayload): string | null {
   if (typeof payload.output_text === "string" && payload.output_text.trim().length > 0) {

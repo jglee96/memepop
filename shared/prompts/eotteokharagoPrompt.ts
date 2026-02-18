@@ -1,4 +1,5 @@
 import type { PromptEnvelope } from "@/shared/security/promptPolicy";
+import { buildCompactStyleContext } from "@/shared/prompts/compactContext";
 
 interface EotteokharagoPromptOptions {
   strict?: boolean;
@@ -11,7 +12,7 @@ export function buildEotteokharagoPrompt(
   envelope: PromptEnvelope,
   options: EotteokharagoPromptOptions = {}
 ): string {
-  const styleExampleBlock = envelope.styleExamples.length > 0 ? envelope.styleExamples.join("\n- ") : "(none)";
+  const styleSeed = buildCompactStyleContext(envelope);
   const normalizedInput = normalize(envelope.userInput);
   const hotspot = deriveHotspot(envelope.userInput);
   const firstTwo = normalizedInput.slice(0, 2);
@@ -27,45 +28,38 @@ export function buildEotteokharagoPrompt(
   const structureRule =
     syllableCount <= 3
       ? [
-          "Short-word mode:",
-          "- Make at least 12 variants by rotating the FIRST syllable (onset/vowel changes).",
-          "- You may stretch sounds (e.g., 꼬오시다, 꼬오숩다 style).",
-          "- If the original has final consonant feel, preserve it naturally in many variants.",
-          "- All outputs must be complete Hangul syllable blocks only (no isolated jamo like ㅂ, ㅍ)."
-        ].join("\n")
+          "DIVERSITY(short): rotate first syllable in >=12 items.",
+          "DIVERSITY(short): stretching allowed (e.g., 꼬오시다 style) if pronunciation stays close.",
+          "DIVERSITY(short): keep 받침 느낌 in many outputs when input has it.",
+          "DIVERSITY(short): no isolated jamo (ㅂ/ㅍ etc)."
+        ].join(" ")
       : [
-          "Long-word mode:",
-          "- At least 10 variants must mutate the first two syllables.",
-          "- At least 10 variants must mutate the middle stem.",
-          "- Suffix-only edits must stay under 35% of the list.",
-          `- Do not over-fix \"${firstTwo}\"; diversify the leading sound.`
-        ].join("\n");
+          "DIVERSITY(long): mutate first 1-2 syllables in >=10 items.",
+          "DIVERSITY(long): mutate middle stem in >=10 items.",
+          "DIVERSITY(long): suffix-only edits <=35%.",
+          `DIVERSITY(long): do not over-fix \"${firstTwo}\"; diversify leading sound.`
+        ].join(" ");
 
   const strictBlock = options.strict
     ? [
-        "Retry mode: previous output was too monotonous or too far from pronunciation.",
-        "Increase beginning/middle diversity while keeping sound close.",
-        "If many outputs are suffix-only, regenerate before answering.",
-        "If any output contains isolated jamo, regenerate before answering."
-      ].join("\n")
-    : "Mode: normal";
+        "RETRY: previous output low quality.",
+        "RETRY: increase beginning/middle diversity but keep phonetic closeness.",
+        "RETRY: if suffix-only heavy or jamo-broken, regenerate before final output."
+      ].join(" ")
+    : "RETRY: off";
 
   return [
-    `Meme style context: ${envelope.styleContext}`,
-    "Style examples:",
-    `- ${styleExampleBlock}`,
-    `User input: ${envelope.userInput}`,
-    "Output format: exactly one line, comma + space separated Korean variants.",
+    "TASK: Generate eotteokharago-style Korean phonetic variants.",
+    `INPUT: ${envelope.userInput}`,
+    `STYLE: ${envelope.styleContext}`,
+    `SEED: ${styleSeed}`,
+    "FORMAT: exactly one line, comma+space separated variants.",
     listLengthRule,
-    "First item: must be exactly the user input.",
-    "No duplicates.",
-    "No explanations, labels, quotes, numbering, markdown, or URLs.",
-    "Primary objective: phonetic similarity is mandatory and highest priority.",
-    "Every variant should still sound like a slurred/misheard version of the original.",
-    "Humor objective: playful mishearing is allowed only if pronunciation still stays close.",
-    "Never replace the core stem with unrelated object nouns.",
-    "Do not output unrelated substitutions like '로켓아프다고, 냉장고아프다고'.",
-    `Mutation hotspot: \"${hotspot}\" (beginning/middle pronunciation core).`,
+    "HARD: first item = INPUT, no duplicates, Hangul syllable blocks only, no URL/markdown/labels.",
+    "PRIORITY: phonetic closeness > humor.",
+    "HUMOR: playful mishearing only when pronunciation stays close.",
+    "BAN: do not replace stem with unrelated objects (e.g., 로켓아프다고, 냉장고아프다고).",
+    `HOTSPOT: "${hotspot}" (beginning/middle sound core).`,
     structureRule,
     strictBlock
   ].join("\n");

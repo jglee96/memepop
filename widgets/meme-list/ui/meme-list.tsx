@@ -1,8 +1,6 @@
 import Link from "next/link";
 
 import type { Meme } from "@/entities/meme/types";
-import { Card, buttonVariants } from "@/shared/ui";
-import { cn } from "@/shared/lib/cn";
 
 interface MemeListProps {
   memes: ReadonlyArray<Meme>;
@@ -10,30 +8,24 @@ interface MemeListProps {
 
 export function MemeList({ memes }: MemeListProps): React.JSX.Element {
   return (
-    <main className="space-y-5">
-      <header className="space-y-2">
-        <h1 className="font-['Space_Grotesk','SUIT','Pretendard','Noto_Sans_KR',sans-serif] text-3xl text-slate-900 dark:text-slate-100">
-          밈 목록
-        </h1>
-        <p className="text-sm text-slate-600 dark:text-slate-300">
-          밈별 전용 URL로 이동해 설명, 예시, FAQ, 생성 기능을 바로 사용할 수 있습니다.
-        </p>
+    <main className="space-y-10 pb-6">
+      <header className="border-y border-slate-300/80 py-8 dark:border-slate-700/80">
+        <h1 className="font-['Space_Grotesk','SUIT','Pretendard','Noto_Sans_KR',sans-serif] text-5xl tracking-tight sm:text-6xl">Memes</h1>
       </header>
-
-      <section className="grid gap-4 md:grid-cols-2">
+      <ul className="divide-y divide-slate-300/80 border-y border-slate-300/80 dark:divide-slate-700/80 dark:border-slate-700/80">
         {memes.map((meme) => (
-          <Card key={meme.slug} className="flex h-full flex-col justify-between gap-3">
-            <div>
-              <h2 className="text-xl font-semibold text-slate-900 dark:text-slate-100">{meme.title}</h2>
-              <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">{meme.description.split("\n")[0]}</p>
-              <p className="mt-3 text-xs text-slate-500 dark:text-slate-400">키워드: {meme.seo.keywords.join(", ")}</p>
-            </div>
-            <Link href={`/m/${meme.slug}`} className={cn(buttonVariants({ variant: "default" }), "w-fit")}>
-              {meme.title} 생성 페이지
+          <li key={meme.slug} className="py-4">
+            <Link href={`/m/${meme.slug}`} className="group flex items-end justify-between gap-3">
+              <span className="font-['Space_Grotesk','SUIT','Pretendard','Noto_Sans_KR',sans-serif] text-2xl tracking-tight transition-transform duration-200 group-hover:translate-x-1 sm:text-3xl">
+                {meme.title}
+              </span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 transition-colors group-hover:text-slate-900 dark:text-slate-400 dark:group-hover:text-slate-100">
+                /m/{meme.slug}
+              </span>
             </Link>
-          </Card>
+          </li>
         ))}
-      </section>
+      </ul>
     </main>
   );
 }

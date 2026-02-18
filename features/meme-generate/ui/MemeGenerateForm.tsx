@@ -2,7 +2,7 @@
 
 import { useId, useMemo, useState } from "react";
 
-import { Button, Card, Label, Textarea } from "@/shared/ui";
+import { Button, Label, Textarea } from "@/shared/ui";
 
 interface MemeGenerateFormProps {
   slug: string;
@@ -74,10 +74,15 @@ export function MemeGenerateForm({ slug, placeholder }: MemeGenerateFormProps): 
   }
 
   return (
-    <Card className="space-y-4">
-      <form className="space-y-4" onSubmit={onSubmit}>
-        <div className="space-y-2">
-          <Label htmlFor={inputId}>변형할 문구</Label>
+    <section className="space-y-8">
+      <form className="space-y-6" onSubmit={onSubmit}>
+        <div className="space-y-3">
+          <Label
+            htmlFor={inputId}
+            className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400"
+          >
+            입력
+          </Label>
           <Textarea
             id={inputId}
             value={input}
@@ -85,33 +90,46 @@ export function MemeGenerateForm({ slug, placeholder }: MemeGenerateFormProps): 
             onChange={(event) => setInput(event.target.value)}
             maxLength={300}
             aria-invalid={Boolean(error)}
+            className="text-2xl leading-tight sm:text-3xl"
           />
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          <Button type="submit" disabled={isSubmitDisabled}>
-            {isPending ? "생성 중..." : "변형 생성"}
+        <div className="flex flex-wrap gap-3">
+          <Button
+            type="submit"
+            variant="secondary"
+            size="sm"
+            className="border-slate-400/90 bg-transparent px-5 text-[11px] font-semibold uppercase tracking-[0.18em] hover:bg-slate-900 hover:text-white dark:border-slate-500 dark:hover:bg-slate-100 dark:hover:text-slate-900"
+            disabled={isSubmitDisabled}
+          >
+            {isPending ? "생성 중..." : "생성"}
           </Button>
-          <Button type="button" variant="secondary" onClick={onCopy} disabled={!output}>
-            결과 복사
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className="border-slate-400/90 bg-transparent px-5 text-[11px] font-semibold uppercase tracking-[0.18em] hover:bg-slate-900 hover:text-white dark:border-slate-500 dark:hover:bg-slate-100 dark:hover:text-slate-900"
+            onClick={onCopy}
+            disabled={!output}
+          >
+            복사
           </Button>
         </div>
       </form>
 
-      <div aria-live="polite" className="space-y-2 text-sm">
-        {error ? <p className="text-rose-600 dark:text-rose-300">{error}</p> : null}
-        {copyState === "copied" ? <p className="text-emerald-700 dark:text-emerald-300">결과를 복사했습니다.</p> : null}
-        {copyState === "failed" ? (
-          <p className="text-rose-600 dark:text-rose-300">클립보드 복사에 실패했습니다. 결과를 수동으로 복사해 주세요.</p>
-        ) : null}
+      <div aria-live="polite" className="space-y-1 text-xs font-medium tracking-wide text-slate-600 dark:text-slate-300">
+        {error ? <p>{error}</p> : null}
+        {copyState === "copied" ? <p>복사됨</p> : null}
+        {copyState === "failed" ? <p>복사 실패</p> : null}
       </div>
 
       {output ? (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-200">
-          {output}
-        </div>
+        <section className="space-y-3 border-t border-slate-300/80 pt-5 dark:border-slate-700/80">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 dark:text-slate-400">Output</p>
+          <p className="whitespace-pre-wrap text-lg leading-relaxed sm:text-xl">{output}</p>
+        </section>
       ) : null}
-    </Card>
+    </section>
   );
 }
 

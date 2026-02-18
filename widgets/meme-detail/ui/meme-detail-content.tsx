@@ -1,5 +1,4 @@
 import type { Meme } from "@/entities/meme/types";
-import { Badge, Card } from "@/shared/ui";
 
 interface MemeDetailContentProps {
   meme: Meme;
@@ -8,57 +7,26 @@ interface MemeDetailContentProps {
 
 export function MemeDetailContent({ meme, form }: MemeDetailContentProps): React.JSX.Element {
   return (
-    <main className="space-y-4">
-      <header className="space-y-3">
-        <Badge>Meme Landing</Badge>
-        <h1 className="font-['Space_Grotesk','SUIT','Pretendard','Noto_Sans_KR',sans-serif] text-3xl text-slate-900 dark:text-slate-100">
+    <main className="space-y-12 pb-6">
+      <header className="border-y border-slate-300/80 py-8 dark:border-slate-700/80">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">/m/{meme.slug}</p>
+        <h1 className="mt-4 font-['Space_Grotesk','SUIT','Pretendard','Noto_Sans_KR',sans-serif] text-5xl leading-[0.95] tracking-tight sm:text-7xl">
           {meme.title}
         </h1>
-        <p className="whitespace-pre-line text-sm leading-6 text-slate-600 dark:text-slate-300">{meme.description}</p>
       </header>
 
       {form}
 
-      <section className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">이 밈은 언제 쓰나요?</h2>
-          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-600 dark:text-slate-300">
-            {meme.useCases.map((useCase) => (
-              <li key={useCase}>{useCase}</li>
-            ))}
-          </ul>
-        </Card>
-
-        <Card>
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">좋은 입력 예시</h2>
-          <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-600 dark:text-slate-300">
-            {meme.examples.map((example) => (
-              <li key={example}>{example}</li>
-            ))}
-          </ul>
-        </Card>
-      </section>
-
-      <Card>
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">금지/주의</h2>
-        <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-600 dark:text-slate-300">
-          <li>개인정보, 계정정보, 연락처, 금전 요구 표현은 입력하지 마세요.</li>
-          <li>특정 집단 비하나 폭력/위협 표현은 차단됩니다.</li>
-          <li>URL, 코드블록, 프롬프트 우회 지시는 생성 요청에서 거부됩니다.</li>
-        </ul>
-      </Card>
-
-      <Card>
-        <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">FAQ</h2>
-        <ul className="mt-3 space-y-3 text-sm text-slate-600 dark:text-slate-300">
-          {meme.faq.map((entry) => (
-            <li key={entry.q}>
-              <p className="font-semibold text-slate-800 dark:text-slate-100">{entry.q}</p>
-              <p className="mt-1">{entry.a}</p>
+      <section className="space-y-4 border-t border-slate-300/80 pt-6 dark:border-slate-700/80">
+        <h2 className="text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Samples</h2>
+        <ul className="space-y-3">
+          {meme.examples.map((example) => (
+            <li key={example} className="text-sm leading-relaxed text-slate-700 dark:text-slate-300">
+              {example}
             </li>
           ))}
         </ul>
-      </Card>
+      </section>
     </main>
   );
 }

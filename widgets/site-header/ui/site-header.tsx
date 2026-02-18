@@ -4,25 +4,19 @@ import { ThemeToggle } from "@/shared/ui";
 
 export function SiteHeader(): React.JSX.Element {
   return (
-    <header className="sticky top-0 z-10 mb-8 rounded-2xl border border-slate-200/80 bg-white/80 px-4 py-3 backdrop-blur-md dark:border-slate-800 dark:bg-slate-900/70">
-      <div className="flex items-center justify-between gap-3">
+    <header className="mb-12 border-b border-slate-300/80 pb-5 dark:border-slate-700/80">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <Link
           href="/"
-          className="font-['Space_Grotesk','SUIT','Pretendard','Noto_Sans_KR',sans-serif] text-base font-bold tracking-tight text-slate-900 dark:text-slate-100"
+          className="font-['Space_Grotesk','SUIT','Pretendard','Noto_Sans_KR',sans-serif] text-sm font-bold uppercase tracking-[0.28em]"
         >
           MemePop
         </Link>
-        <div className="flex items-center gap-1 text-sm text-slate-600 dark:text-slate-300">
-          <Link
-            href="/memes"
-            className="rounded-full px-3 py-2 transition hover:bg-slate-100 dark:hover:bg-slate-800"
-          >
+        <div className="flex items-center gap-4 text-[11px] font-semibold uppercase tracking-[0.2em]">
+          <Link href="/memes" className="transition-opacity hover:opacity-60">
             밈 목록
           </Link>
-          <Link
-            href="/m/eotteokharago"
-            className="rounded-full px-3 py-2 transition hover:bg-slate-100 dark:hover:bg-slate-800"
-          >
+          <Link href="/m/eotteokharago" className="transition-opacity hover:opacity-60">
             첫 밈
           </Link>
           <ThemeToggle />

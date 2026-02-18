@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 
+import { AppThemeProvider } from "@/app/providers/theme-provider";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, absoluteUrl } from "@/shared/config/site";
+import { SiteHeader } from "@/widgets/site-header";
 
 import "./globals.css";
 
@@ -37,20 +38,16 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }): React.JSX.Element {
   return (
-    <html lang="ko">
-      <body>
-        <div className="shell">
-          <header className="top-nav">
-            <Link href="/" className="brand" style={{ fontFamily: "var(--font-display)" }}>
-              MemePop
-            </Link>
-            <nav className="nav-links">
-              <Link href="/memes">밈 목록</Link>
-              <Link href="/m/eotteokharago">첫 밈 바로가기</Link>
-            </nav>
-          </header>
-          {children}
-        </div>
+    <html lang="ko" suppressHydrationWarning>
+      <body
+        className="min-h-screen bg-gradient-to-b from-slate-100 via-white to-slate-100 font-['SUIT','Pretendard','Noto_Sans_KR',sans-serif] text-slate-800 antialiased dark:from-slate-950 dark:via-slate-950 dark:to-slate-900 dark:text-slate-100"
+      >
+        <AppThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <div className="mx-auto w-full max-w-6xl px-4 pb-12 pt-6 sm:px-6 lg:px-8">
+            <SiteHeader />
+            {children}
+          </div>
+        </AppThemeProvider>
       </body>
     </html>
   );

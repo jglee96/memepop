@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-import { getAllMemes } from "@/entities/meme/registry";
+import { getAllMemes } from "@/entities/meme";
 import { SITE_URL } from "@/shared/config/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {

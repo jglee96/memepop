@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { getAllMemeSlugs, getMemeBySlug } from "@/entities/meme/registry";
-import { MemeGenerateForm } from "@/features/meme-generate/ui/MemeGenerateForm";
+import { getAllMemeSlugs, getMemeBySlug } from "@/entities/meme";
+import { MemeGenerateForm } from "@/features/meme-generate";
 import { absoluteUrl } from "@/shared/config/site";
+import { MemeDetailContent } from "@/widgets/meme-detail";
 
 interface MemePageProps {
   params: Promise<{ slug: string }>;
@@ -72,55 +73,12 @@ export default async function MemePage({ params }: MemePageProps): Promise<React
   };
 
   return (
-    <main>
-      <span className="badge">Meme Landing</span>
-      <h1 style={{ marginTop: 0, fontFamily: "var(--font-display)" }}>{meme.title}</h1>
-      <p className="muted">{meme.description}</p>
-
-      <MemeGenerateForm slug={meme.slug} placeholder="예: 배고프다고" />
-
-      <section className="grid two" style={{ marginTop: "1rem" }}>
-        <article className="card">
-          <h2 style={{ marginTop: 0 }}>이 밈은 언제 쓰나요?</h2>
-          <ul className="list">
-            {meme.useCases.map((useCase) => (
-              <li key={useCase}>{useCase}</li>
-            ))}
-          </ul>
-        </article>
-        <article className="card">
-          <h2 style={{ marginTop: 0 }}>좋은 입력 예시</h2>
-          <ul className="list">
-            {meme.examples.map((example) => (
-              <li key={example}>{example}</li>
-            ))}
-          </ul>
-        </article>
-      </section>
-
-      <section className="card" style={{ marginTop: "1rem" }}>
-        <h2 style={{ marginTop: 0 }}>금지/주의</h2>
-        <ul className="list">
-          <li>개인정보, 계정정보, 연락처, 금전 요구 표현은 입력하지 마세요.</li>
-          <li>특정 집단 비하나 폭력/위협 표현은 차단됩니다.</li>
-          <li>URL, 코드블록, 프롬프트 우회 지시는 생성 요청에서 거부됩니다.</li>
-        </ul>
-      </section>
-
-      <section className="card" style={{ marginTop: "1rem" }}>
-        <h2 style={{ marginTop: 0 }}>FAQ</h2>
-        <ul className="list">
-          {meme.faq.map((entry) => (
-            <li key={entry.q}>
-              <strong>{entry.q}</strong>
-              <br />
-              {entry.a}
-            </li>
-          ))}
-        </ul>
-      </section>
-
+    <>
+      <MemeDetailContent
+        meme={meme}
+        form={<MemeGenerateForm slug={meme.slug} placeholder="예: 배고프다고" />}
+      />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
-    </main>
+    </>
   );
 }

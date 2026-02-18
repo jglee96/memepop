@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { getMemeBySlug, isKnownSlug } from "@/entities/meme/registry";
-import { generateRequestSchema } from "@/features/meme-generate/model/schema";
+import { getMemeBySlug, isKnownSlug } from "@/entities/meme";
+import { generateRequestSchema } from "@/features/meme-generate";
 import { sha256 } from "@/shared/lib/hash";
 import { generateMemeWithOpenAI } from "@/shared/lib/openaiMemeClient";
 import { consumeRateLimit } from "@/shared/lib/rateLimit";

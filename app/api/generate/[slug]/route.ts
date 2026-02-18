@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getMemeBySlug, isKnownSlug } from "@/entities/meme/registry";
-import { generateMemeOutput } from "@/features/meme-generate/model/generateMeme";
 import { generateRequestSchema } from "@/features/meme-generate/model/schema";
 import { sha256 } from "@/shared/lib/hash";
+import { generateMemeWithOpenAI } from "@/shared/lib/openaiMemeClient";
 import { consumeRateLimit } from "@/shared/lib/rateLimit";
 import { validateUserInput } from "@/shared/security/inputValidation";
 import { sanitizeOutput } from "@/shared/security/outputSanitizer";
@@ -66,14 +66,27 @@ export async function POST(request: NextRequest, { params }: RouteParams): Promi
     return errorResponse(404, "UNKNOWN_SLUG", "존재하지 않는 밈입니다.");
   }
 
-  buildPromptEnvelope({
+  const promptEnvelope = buildPromptEnvelope({
     memeTitle: meme.title,
     memeInstructions: meme.template.instructions,
     userInput: validation.sanitized
   });
 
-  const rawOutput = generateMemeOutput(slug, validation.sanitized);
-  const safeOutput = sanitizeOutput(rawOutput);
+  const llmResult = await generateMemeWithOpenAI(promptEnvelope);
+  if (!llmResult.ok) {
+    securityLog("OPENAI_GENERATION_FAILED", {
+      slug,
+      code: llmResult.code,
+      inputLength: validation.sanitized.length
+    });
+    return errorResponse(
+      503,
+      llmResult.code,
+      "지금은 생성 모델을 사용할 수 없습니다. 잠시 후 다시 시도해 주세요."
+    );
+  }
+
+  const safeOutput = sanitizeOutput(llmResult.output);
   if (!safeOutput.ok) {
     securityLog("BLOCKED_OUTPUT", {
       slug,
@@ -88,7 +101,8 @@ export async function POST(request: NextRequest, { params }: RouteParams): Promi
     {
       status: 200,
       headers: {
-        "Cache-Control": "no-store"
+        "Cache-Control": "no-store",
+        "X-Generation-Source": "llm"
       }
     }
   );

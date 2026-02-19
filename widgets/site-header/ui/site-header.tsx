@@ -16,6 +16,9 @@ export function SiteHeader(): React.JSX.Element {
           <Link href="/memes" className="transition-opacity hover:opacity-60">
             밈 목록
           </Link>
+          <Link href="/faq" className="transition-opacity hover:opacity-60">
+            FAQ
+          </Link>
           <Link href="/m/eotteokharago" className="transition-opacity hover:opacity-60">
             첫 밈
           </Link>

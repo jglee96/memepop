@@ -60,26 +60,5 @@ export default async function MemePage({ params }: MemePageProps): Promise<React
   }
   const inputPlaceholder = meme.template.placeholders?.[0] ?? "예: 배고프다고";
 
-  const faqJsonLd = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: meme.faq.map((entry) => ({
-      "@type": "Question",
-      name: entry.q,
-      acceptedAnswer: {
-        "@type": "Answer",
-        text: entry.a
-      }
-    }))
-  };
-
-  return (
-    <>
-      <MemeDetailContent
-        meme={meme}
-        form={<MemeGenerateForm slug={meme.slug} placeholder={inputPlaceholder} />}
-      />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
-    </>
-  );
+  return <MemeDetailContent meme={meme} form={<MemeGenerateForm slug={meme.slug} placeholder={inputPlaceholder} />} />;
 }

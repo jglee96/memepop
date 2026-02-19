@@ -68,6 +68,7 @@ npm run build
 
 - `/` 홈 랜딩
 - `/memes` 밈 목록
+- `/faq` 공통 FAQ
 - `/m/[slug]` 밈 상세 + 생성 UI
 - `/api/generate/[slug]` 생성 API (POST)
 

@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import type { Meme } from "@/entities/meme/types";
+import type { Meme } from "@/entities/meme";
 
 interface MemeListProps {
   memes: ReadonlyArray<Meme>;

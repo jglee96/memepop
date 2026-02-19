@@ -3,7 +3,7 @@ import {
   RATE_LIMIT_PENALTY_MS,
   RATE_LIMIT_REPEAT_INPUT_THRESHOLD,
   RATE_LIMIT_WINDOW_MS
-} from "@/shared/config/constants";
+} from "@/shared/config";
 
 interface RateLimitState {
   count: number;

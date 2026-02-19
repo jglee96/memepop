@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import { AppThemeProvider } from "@/app/providers/theme-provider";
-import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, absoluteUrl } from "@/shared/config/site";
+import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, absoluteUrl } from "@/shared/config";
 import { SiteHeader } from "@/widgets/site-header";
 
 import "./globals.css";

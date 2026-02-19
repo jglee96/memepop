@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { shouldRetryAppaDoIjeHangyedaOutput } from "@/shared/prompts";
+import { shouldRetryAppaDoIjeHangyedaOutput } from "@/features/meme-generate/model/strategies";
 
 describe("appa-do-ije-hangyeda prompt quality gate", () => {
   it("retries when output looks like short comma list", () => {

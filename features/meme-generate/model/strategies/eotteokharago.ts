@@ -1,64 +1,68 @@
-import type { PromptEnvelope } from "@/shared/security/promptPolicy";
-import { buildCompactStyleContext } from "@/shared/prompts/compactContext";
-
-interface EotteokharagoPromptOptions {
-  strict?: boolean;
-}
+import { buildCompactStyleContext } from "./buildCompactStyleContext";
+import type { MemeGenerationSlice } from "./types";
 
 const JAMO_REGEX = /[ㄱ-ㅎㅏ-ㅣ]/;
 const OBJECT_WORD_REGEX = /(로켓|냉장고|헬리콥터|우주선|전기밥솥|계산기|샌드위치|치킨무|택배상자|선풍기)/;
 
-export function buildEotteokharagoPrompt(
-  envelope: PromptEnvelope,
-  options: EotteokharagoPromptOptions = {}
-): string {
-  const styleSeed = buildCompactStyleContext(envelope);
-  const normalizedInput = normalize(envelope.userInput);
-  const hotspot = deriveHotspot(envelope.userInput);
-  const firstTwo = normalizedInput.slice(0, 2);
-  const syllableCount = Array.from(normalizedInput).length;
+export const eotteokharagoSlice: MemeGenerationSlice = {
+  slug: "eotteokharago",
+  buildPrompt(envelope, strictMode): string {
+    const styleSeed = buildCompactStyleContext(envelope);
+    const normalizedInput = normalize(envelope.userInput);
+    const hotspot = deriveHotspot(envelope.userInput);
+    const firstTwo = normalizedInput.slice(0, 2);
+    const syllableCount = Array.from(normalizedInput).length;
 
-  const lengthRule =
-    syllableCount <= 3
-      ? "LEN: 24-44 items."
-      : syllableCount <= 5
-        ? "LEN: 22-34 items."
-        : "LEN: 24-36 items.";
+    const lengthRule =
+      syllableCount <= 3
+        ? "LEN: 24-44 items."
+        : syllableCount <= 5
+          ? "LEN: 22-34 items."
+          : "LEN: 24-36 items.";
 
-  const diversityRule =
-    syllableCount <= 3
-      ? [
-          "DIVERSITY(short): rotate first syllable in >=12 items.",
-          "DIVERSITY(short): sound-stretch allowed (e.g., 꼬오시다) if pronunciation remains close.",
-          "DIVERSITY(short): no isolated jamo (ㅂ/ㅍ etc)."
-        ].join(" ")
-      : [
-          "DIVERSITY(long): mutate first 1-2 syllables in >=12 items.",
-          "DIVERSITY(long): include >=4 items where beginning chunk is expanded by +1 syllable.",
-          `DIVERSITY(long): do not keep "${firstTwo}" fixed; vary leading sound.`,
-          "DIVERSITY(long): suffix-only edits <=30%."
-        ].join(" ");
+    const diversityRule =
+      syllableCount <= 3
+        ? [
+            "DIVERSITY(short): rotate first syllable in >=12 items.",
+            "DIVERSITY(short): sound-stretch allowed (e.g., 꼬오시다) if pronunciation remains close.",
+            "DIVERSITY(short): no isolated jamo (ㅂ/ㅍ etc)."
+          ].join(" ")
+        : [
+            "DIVERSITY(long): mutate first 1-2 syllables in >=12 items.",
+            "DIVERSITY(long): include >=4 items where beginning chunk is expanded by +1 syllable.",
+            `DIVERSITY(long): do not keep "${firstTwo}" fixed; vary leading sound.`,
+            "DIVERSITY(long): suffix-only edits <=30%."
+          ].join(" ");
 
-  const strictRule = options.strict
-    ? "RETRY: output was monotone; increase beginning/middle diversity while staying phonetically close."
-    : "RETRY: off";
+    const strictRule = strictMode
+      ? "RETRY: output was monotone; increase beginning/middle diversity while staying phonetically close."
+      : "RETRY: off";
 
-  return [
-    "TASK: generate eotteokharago-style Korean phonetic variants.",
-    `INPUT: ${envelope.userInput}`,
-    `STYLE: ${envelope.styleContext}`,
-    `SEED: ${styleSeed}`,
-    "FORMAT: exactly one line, comma+space separated variants.",
-    lengthRule,
-    "HARD: first item=INPUT; no duplicates; Hangul syllable blocks only; no URL/markdown/labels.",
-    "PRIORITY: phonetic similarity > humor.",
-    "HUMOR: only playful mishearing that still sounds close.",
-    "BAN: do not replace core stem with unrelated object nouns.",
-    `HOTSPOT: ${hotspot}`,
-    diversityRule,
-    strictRule
-  ].join("\n");
-}
+    return [
+      "TASK: generate eotteokharago-style Korean phonetic variants.",
+      `INPUT: ${envelope.userInput}`,
+      `STYLE: ${envelope.styleContext}`,
+      `SEED: ${styleSeed}`,
+      "FORMAT: exactly one line, comma+space separated variants.",
+      lengthRule,
+      "HARD: first item=INPUT; no duplicates; Hangul syllable blocks only; no URL/markdown/labels.",
+      "PRIORITY: phonetic similarity > humor.",
+      "HUMOR: only playful mishearing that still sounds close.",
+      "BAN: do not replace core stem with unrelated object nouns.",
+      `HOTSPOT: ${hotspot}`,
+      diversityRule,
+      strictRule
+    ].join("\n");
+  },
+  shouldRetry(envelope, output): boolean {
+    return shouldRetryEotteokharagoOutput(envelope.userInput, output);
+  },
+  estimateMaxOutputTokens(envelope, strictMode): number {
+    const length = Array.from(envelope.userInput.replace(/\s+/g, "")).length;
+    const base = length <= 3 ? 260 : length <= 5 ? 300 : 340;
+    return strictMode ? base + 60 : base;
+  }
+};
 
 export function shouldRetryEotteokharagoOutput(userInput: string, output: string): boolean {
   const variants = output

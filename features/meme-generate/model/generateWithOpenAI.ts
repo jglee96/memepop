@@ -1,11 +1,5 @@
-import type { PromptEnvelope } from "@/shared/security/promptPolicy";
-import {
-  buildAppaDoIjeHangyedaPrompt,
-  buildDefaultMemePrompt,
-  buildEotteokharagoPrompt,
-  shouldRetryAppaDoIjeHangyedaOutput,
-  shouldRetryEotteokharagoOutput
-} from "@/shared/prompts";
+import { resolveMemeGenerationSlice } from "./strategies";
+import type { PromptEnvelope } from "@/shared/security";
 
 const OPENAI_RESPONSES_API_URL = "https://api.openai.com/v1/responses";
 const OPENAI_TIMEOUT_MS = 15_000;
@@ -39,6 +33,7 @@ export async function generateMemeWithOpenAI(envelope: PromptEnvelope): Promise<
   const model = process.env.OPENAI_MODEL ?? "gpt-4.1-mini";
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), OPENAI_TIMEOUT_MS);
+  const slice = resolveMemeGenerationSlice(envelope.memeSlug);
 
   try {
     const firstAttempt = await requestGeneration({
@@ -56,11 +51,7 @@ export async function generateMemeWithOpenAI(envelope: PromptEnvelope): Promise<
       return { ok: false, code: "OPENAI_EMPTY_OUTPUT" };
     }
 
-    const shouldRetry =
-      (envelope.memeSlug === "eotteokharago" &&
-        shouldRetryEotteokharagoOutput(envelope.userInput, firstAttempt.output)) ||
-      (envelope.memeSlug === "appa-do-ije-hangyeda" &&
-        shouldRetryAppaDoIjeHangyedaOutput(firstAttempt.output));
+    const shouldRetry = slice.shouldRetry?.(envelope, firstAttempt.output) ?? false;
 
     if (!shouldRetry) {
       return {
@@ -109,7 +100,11 @@ interface RequestGenerationInput {
 type RequestGenerationResult = { ok: true; output: string | null } | { ok: false };
 
 async function requestGeneration(input: RequestGenerationInput): Promise<RequestGenerationResult> {
-  const maxOutputTokens = estimateMaxOutputTokens(input.envelope, input.strictMode);
+  const slice = resolveMemeGenerationSlice(input.envelope.memeSlug);
+  const maxOutputTokens =
+    slice.estimateMaxOutputTokens?.(input.envelope, input.strictMode) ??
+    estimateDefaultMaxOutputTokens(input.envelope, input.strictMode);
+
   const response = await fetch(OPENAI_RESPONSES_API_URL, {
     method: "POST",
     headers: {
@@ -121,7 +116,7 @@ async function requestGeneration(input: RequestGenerationInput): Promise<Request
       temperature: input.strictMode ? 0.9 : 0.82,
       max_output_tokens: maxOutputTokens,
       instructions: input.envelope.systemPolicy,
-      input: buildUserPrompt(input.envelope, input.strictMode)
+      input: slice.buildPrompt(input.envelope, input.strictMode)
     }),
     signal: input.signal
   });
@@ -134,25 +129,11 @@ async function requestGeneration(input: RequestGenerationInput): Promise<Request
   return { ok: true, output: extractOutputText(payload) };
 }
 
-function buildUserPrompt(envelope: PromptEnvelope, strictMode: boolean): string {
-  if (envelope.memeSlug === "appa-do-ije-hangyeda") {
-    return buildAppaDoIjeHangyedaPrompt(envelope, { strict: strictMode });
-  }
-
-  if (envelope.memeSlug === "eotteokharago") {
-    return buildEotteokharagoPrompt(envelope, { strict: strictMode });
-  }
-  return buildDefaultMemePrompt(envelope);
-}
-
 function normalizeOutput(output: string): string {
   return output.replace(/\n+/g, ", ").replace(/\s+/g, " ").trim();
 }
-function estimateMaxOutputTokens(envelope: PromptEnvelope, strictMode: boolean): number {
-  if (envelope.memeSlug === "appa-do-ije-hangyeda") {
-    return strictMode ? 620 : 520;
-  }
 
+function estimateDefaultMaxOutputTokens(envelope: PromptEnvelope, strictMode: boolean): number {
   const length = Array.from(envelope.userInput.replace(/\s+/g, "")).length;
   const base = length <= 3 ? 260 : length <= 5 ? 300 : 340;
   return strictMode ? base + 60 : base;

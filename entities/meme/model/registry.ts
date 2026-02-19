@@ -1,4 +1,4 @@
-import type { Meme } from "@/entities/meme/types";
+import type { Meme } from "./types";
 
 const memeRegistry: ReadonlyArray<Meme> = [
   {

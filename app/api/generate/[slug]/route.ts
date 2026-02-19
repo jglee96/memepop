@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getMemeBySlug, isKnownSlug } from "@/entities/meme";
-import { generateRequestSchema } from "@/features/meme-generate";
+import { generateMemeWithOpenAI, generateRequestSchema } from "@/features/meme-generate";
 import { sha256 } from "@/shared/lib/hash";
-import { generateMemeWithOpenAI } from "@/shared/lib/openaiMemeClient";
 import { consumeRateLimit } from "@/shared/lib/rateLimit";
-import { validateUserInput } from "@/shared/security/inputValidation";
-import { sanitizeOutput } from "@/shared/security/outputSanitizer";
-import { buildPromptEnvelope } from "@/shared/security/promptPolicy";
+import { buildPromptEnvelope, sanitizeOutput, validateUserInput } from "@/shared/security";
 
 interface RouteParams {
   params: Promise<{ slug: string }>;

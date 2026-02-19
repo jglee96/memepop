@@ -1,4 +1,4 @@
-import type { PromptEnvelope } from "@/shared/security/promptPolicy";
+import type { PromptEnvelope } from "@/shared/security";
 
 const EXAMPLE_LIMIT = 2;
 const EXAMPLE_VARIANT_LIMIT = 4;

@@ -1,4 +1,4 @@
-import { MAX_INPUT_LENGTH } from "@/shared/config/constants";
+import { MAX_INPUT_LENGTH } from "@/shared/config";
 
 const CONTROL_CHARS_REGEX = /[\u0000-\u001F\u007F]/g;
 const ZERO_WIDTH_REGEX = /[\u200B-\u200D\uFEFF]/g;

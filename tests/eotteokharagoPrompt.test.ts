@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { shouldRetryEotteokharagoOutput } from "@/shared/prompts";
+import { shouldRetryEotteokharagoOutput } from "@/features/meme-generate/model/strategies";
 
 describe("eotteokharago prompt quality gate", () => {
   it("retries when variants mostly change only endings", () => {

@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 
 import { getAllMemeSlugs, getMemeBySlug } from "@/entities/meme";
 import { MemeGenerateForm } from "@/features/meme-generate";
-import { absoluteUrl } from "@/shared/config/site";
+import { absoluteUrl } from "@/shared/config";
 import { MemeDetailContent } from "@/widgets/meme-detail";
 
 interface MemePageProps {

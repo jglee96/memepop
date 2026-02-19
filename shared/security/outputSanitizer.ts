@@ -1,4 +1,4 @@
-import { MAX_OUTPUT_LENGTH } from "@/shared/config/constants";
+import { MAX_OUTPUT_LENGTH } from "@/shared/config";
 
 const LINK_PATTERN = /(https?:\/\/\S+|www\.\S+)/gi;
 

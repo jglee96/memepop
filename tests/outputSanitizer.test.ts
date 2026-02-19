@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { sanitizeOutput } from "@/shared/security/outputSanitizer";
+import { sanitizeOutput } from "@/shared/security";
 
 describe("outputSanitizer", () => {
   it("removes links and escapes html", () => {

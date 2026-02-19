@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-import { MAX_INPUT_LENGTH } from "@/shared/config/constants";
+import { MAX_INPUT_LENGTH } from "@/shared/config";
 
 export const generateRequestSchema = z.object({
   input: z

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import { absoluteUrl } from "@/shared/config/site";
+import { absoluteUrl } from "@/shared/config";
 
 const COMMON_FAQ: ReadonlyArray<{ q: string; a: string }> = [
   {

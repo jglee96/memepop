@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { sanitizeInput, validateUserInput } from "@/shared/security/inputValidation";
+import { sanitizeInput, validateUserInput } from "@/shared/security";
 
 describe("inputValidation", () => {
   it("removes control and zero-width characters", () => {

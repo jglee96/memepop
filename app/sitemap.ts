@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { getAllMemes } from "@/entities/meme";
-import { SITE_URL } from "@/shared/config/site";
+import { SITE_URL } from "@/shared/config";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();

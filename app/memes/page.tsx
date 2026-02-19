@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import { getAllMemes } from "@/entities/meme";
-import { absoluteUrl } from "@/shared/config/site";
+import { absoluteUrl } from "@/shared/config";
 import { MemeList } from "@/widgets/meme-list";
 
 export const metadata: Metadata = {

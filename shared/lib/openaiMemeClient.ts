@@ -1,7 +1,9 @@
 import type { PromptEnvelope } from "@/shared/security/promptPolicy";
 import {
+  buildAppaDoIjeHangyedaPrompt,
   buildDefaultMemePrompt,
   buildEotteokharagoPrompt,
+  shouldRetryAppaDoIjeHangyedaOutput,
   shouldRetryEotteokharagoOutput
 } from "@/shared/prompts";
 
@@ -55,8 +57,10 @@ export async function generateMemeWithOpenAI(envelope: PromptEnvelope): Promise<
     }
 
     const shouldRetry =
-      envelope.memeSlug === "eotteokharago" &&
-      shouldRetryEotteokharagoOutput(envelope.userInput, firstAttempt.output);
+      (envelope.memeSlug === "eotteokharago" &&
+        shouldRetryEotteokharagoOutput(envelope.userInput, firstAttempt.output)) ||
+      (envelope.memeSlug === "appa-do-ije-hangyeda" &&
+        shouldRetryAppaDoIjeHangyedaOutput(firstAttempt.output));
 
     if (!shouldRetry) {
       return {
@@ -105,7 +109,7 @@ interface RequestGenerationInput {
 type RequestGenerationResult = { ok: true; output: string | null } | { ok: false };
 
 async function requestGeneration(input: RequestGenerationInput): Promise<RequestGenerationResult> {
-  const maxOutputTokens = estimateMaxOutputTokens(input.envelope.userInput, input.strictMode);
+  const maxOutputTokens = estimateMaxOutputTokens(input.envelope, input.strictMode);
   const response = await fetch(OPENAI_RESPONSES_API_URL, {
     method: "POST",
     headers: {
@@ -131,6 +135,10 @@ async function requestGeneration(input: RequestGenerationInput): Promise<Request
 }
 
 function buildUserPrompt(envelope: PromptEnvelope, strictMode: boolean): string {
+  if (envelope.memeSlug === "appa-do-ije-hangyeda") {
+    return buildAppaDoIjeHangyedaPrompt(envelope, { strict: strictMode });
+  }
+
   if (envelope.memeSlug === "eotteokharago") {
     return buildEotteokharagoPrompt(envelope, { strict: strictMode });
   }
@@ -140,8 +148,12 @@ function buildUserPrompt(envelope: PromptEnvelope, strictMode: boolean): string 
 function normalizeOutput(output: string): string {
   return output.replace(/\n+/g, ", ").replace(/\s+/g, " ").trim();
 }
-function estimateMaxOutputTokens(userInput: string, strictMode: boolean): number {
-  const length = Array.from(userInput.replace(/\s+/g, "")).length;
+function estimateMaxOutputTokens(envelope: PromptEnvelope, strictMode: boolean): number {
+  if (envelope.memeSlug === "appa-do-ije-hangyeda") {
+    return strictMode ? 620 : 520;
+  }
+
+  const length = Array.from(envelope.userInput.replace(/\s+/g, "")).length;
   const base = length <= 3 ? 260 : length <= 5 ? 300 : 340;
   return strictMode ? base + 60 : base;
 }

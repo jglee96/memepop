@@ -17,6 +17,7 @@
 
 현재 기본 밈:
 
+- `appa-do-ije-hangyeda` (`/m/appa-do-ije-hangyeda`)
 - `eotteokharago` (`/m/eotteokharago`)
 
 ## Tech Stack

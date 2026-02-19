@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: MemePageProps): Promise<Metad
     return {};
   }
 
-  const title = `${meme.title} - 발음 유사 밈 변형 생성기`;
+  const title = `${meme.title} - 상황 맞춤 밈 변형 생성기`;
   const description = `${meme.seo.summary}. ${meme.seo.keywords.slice(0, 2).join(", ")}를 바로 확인해 보세요.`;
 
   return {
@@ -58,6 +58,7 @@ export default async function MemePage({ params }: MemePageProps): Promise<React
   if (!meme) {
     notFound();
   }
+  const inputPlaceholder = meme.template.placeholders?.[0] ?? "예: 배고프다고";
 
   const faqJsonLd = {
     "@context": "https://schema.org",
@@ -76,7 +77,7 @@ export default async function MemePage({ params }: MemePageProps): Promise<React
     <>
       <MemeDetailContent
         meme={meme}
-        form={<MemeGenerateForm slug={meme.slug} placeholder="예: 배고프다고" />}
+        form={<MemeGenerateForm slug={meme.slug} placeholder={inputPlaceholder} />}
       />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }} />
     </>

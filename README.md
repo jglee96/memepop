@@ -62,6 +62,9 @@ npm run build
 | `OPENAI_API_KEY` | Yes | 서버에서 OpenAI 호출 시 사용 |
 | `OPENAI_MODEL` | Yes(권장) | 생성 모델명 고정값 (예: `gpt-4.1-mini`) |
 | `NEXT_PUBLIC_SITE_URL` | Yes(권장) | canonical/OG 절대 URL 기준 도메인 |
+| `KV_REST_API_URL` | Yes(좋아요 기능) | Vercel KV/Upstash Redis REST URL |
+| `KV_REST_API_TOKEN` | Yes(좋아요 기능) | Vercel KV/Upstash Redis REST Token (쓰기 권한 필요) |
+| `LIKE_IP_HASH_SALT` | Yes(권장) | 좋아요 IP 해시 salt. 미설정 시 기본값 사용 |
 
 `NEXT_PUBLIC_SITE_URL`를 설정하지 않으면 메타 URL이 기본값(`https://memepop.com`)으로 생성될 수 있어, 배포 도메인과 불일치할 수 있습니다.
 
@@ -100,9 +103,14 @@ curl -X POST "http://localhost:3000/api/generate/yeogiseo-kkeuchi-anida" \
 - `OPENAI_API_KEY`
 - `OPENAI_MODEL`
 - `NEXT_PUBLIC_SITE_URL` (배포 도메인)
+- `KV_REST_API_URL`
+- `KV_REST_API_TOKEN`
+- `LIKE_IP_HASH_SALT`
 3. Deploy
 
 프리뷰/프로덕션 모두 동일하게 서버에서만 키를 사용하며, 클라이언트로 비밀키가 노출되지 않도록 설계되어 있습니다.
+
+좋아요 기능은 Vercel KV(Upstash Redis) 연동을 사용합니다. Redis가 연결되지 않은 경우 좋아요는 메모리 fallback으로 동작하며 서버 재시작 시 초기화됩니다.
 
 ## 보안/SEO 참고 문서
 

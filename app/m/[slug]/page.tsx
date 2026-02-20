@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { getAllMemeSlugs, getMemeBySlug } from "@/entities/meme";
 import { MemeGenerateForm } from "@/features/meme-generate";
+import { MemeLikePanel } from "@/features/meme-like";
 import { absoluteUrl } from "@/shared/config";
 import { MemeDetailContent } from "@/widgets/meme-detail";
 
@@ -59,5 +60,5 @@ export default async function MemePage({ params }: MemePageProps): Promise<React
     notFound();
   }
 
-  return <MemeDetailContent meme={meme} form={<MemeGenerateForm slug={meme.slug} />} />;
+  return <MemeDetailContent meme={meme} actions={<MemeLikePanel slug={meme.slug} />} form={<MemeGenerateForm slug={meme.slug} />} />;
 }

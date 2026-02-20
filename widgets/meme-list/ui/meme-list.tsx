@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import type { Meme } from "@/entities/meme";
+import { MemeLikeCount } from "@/features/meme-like";
 
 interface MemeListProps {
   memes: ReadonlyArray<Meme>;
@@ -25,6 +26,9 @@ export function MemeList({ memes }: MemeListProps): React.JSX.Element {
                 </span>
                 <span className="block pt-1 text-[11px] font-medium tracking-[0.08em] text-slate-500 dark:text-slate-400">
                   {meme.addedAt}
+                </span>
+                <span className="block pt-1 text-[11px] font-medium tracking-[0.08em] text-slate-500 dark:text-slate-400">
+                  좋아요 <MemeLikeCount slug={meme.slug} />
                 </span>
               </span>
             </Link>

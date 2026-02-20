@@ -35,8 +35,13 @@ export function HomeLanding({ memes }: HomeLandingProps): React.JSX.Element {
                 <span className="font-['Space_Grotesk','SUIT','Pretendard','Noto_Sans_KR',sans-serif] text-2xl tracking-tight transition-transform duration-200 group-hover:translate-x-1 sm:text-3xl">
                   {meme.title}
                 </span>
-                <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 transition-colors group-hover:text-slate-900 dark:text-slate-400 dark:group-hover:text-slate-100">
-                  /m/{meme.slug}
+                <span className="text-right">
+                  <span className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 transition-colors group-hover:text-slate-900 dark:text-slate-400 dark:group-hover:text-slate-100">
+                    /m/{meme.slug}
+                  </span>
+                  <span className="block pt-1 text-[11px] font-medium tracking-[0.08em] text-slate-500 dark:text-slate-400">
+                    {meme.addedAt}
+                  </span>
                 </span>
               </Link>
             </li>

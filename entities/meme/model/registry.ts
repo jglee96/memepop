@@ -4,6 +4,8 @@ const memeRegistry: ReadonlyArray<Meme> = [
   {
     slug: "appa-do-ije-hangyeda",
     title: "아빠도 이제 한계다",
+    addedAt: "2026-02-20",
+    addedOrder: 2,
     description:
       "‘아빠도 이제 한계다’ 밈은 한 줄 짜증이 아니라, 참고 참다가 폭발한 사람의 장문 카톡 모드를 통째로 패러디하는 포맷입니다. 포인트는 분노 그 자체보다도 서사 빌드업입니다. 처음엔 훈계처럼 시작했다가 점점 감정이 올라오고, 마지막엔 ‘그냥 나가라’ 같은 최후통첩으로 꽂히는 그 리듬이 밈의 핵심입니다.\n\n요즘은 가족 상황보다 회사, 팀플, 게임 길드, 커뮤니티 운영처럼 ‘같은 실수 무한 반복 + 책임 전가’가 쌓인 장면에서 더 자주 쓰입니다. 특히 ‘OO 탓 XX 탓 하지 마라’ 프레임을 내 상황 키워드로 갈아끼우면 바로 밈 온도가 올라갑니다. 진지한 훈계문을 그대로 쓰는 게 아니라, 과장된 드라마 톤으로 비틀어 웃기게 만드는 장르라고 보면 됩니다.\n\nMemePop에서는 상황 설명만 넣으면 이 장문 하이텐션 구조를 유지한 채 밈 버전으로 리믹스해 줍니다. 결과는 저장되지 않고 즉시 반환되며, 복사해서 외부 플랫폼에 바로 던져 쓰면 됩니다.",
     useCases: [
@@ -46,6 +48,8 @@ const memeRegistry: ReadonlyArray<Meme> = [
   {
     slug: "eotteokharago",
     title: "어떡하라고",
+    addedAt: "2026-02-20",
+    addedOrder: 1,
     description:
       "‘어떡하라고’ 밈은 난감한 상황에서 감정을 과장해 표현할 때 쓰는 한국어 밈 문구입니다. 원래 문장 의미는 답답함과 당혹감에 가깝지만, 실제 사용에서는 말맛을 살리기 위해 발음을 일부러 뭉개거나 소리를 비슷하게 비틀어 나열하는 방식이 핵심입니다. 그래서 같은 의미라도 ‘어뜨카라고’, ‘오또카라고’처럼 리듬감 있게 변형하면 밈 톤이 강해집니다.\n\n이 밈은 댓글, 단톡, 커뮤니티 반응처럼 짧고 빠른 대화에서 특히 잘 작동합니다. 현실적인 문제를 진지하게 해결하려는 문장보다, 상황 자체가 어이없거나 억울할 때 자조적으로 웃어넘기는 용도로 많이 쓰입니다. 즉, 공격적인 비난이 아니라 ‘이 상황 나보고 어쩌라는 거야’라는 감정을 유머로 전환하는 표현입니다.\n\nMemePop에서는 이 스타일을 그대로 적용해 입력 문구의 발음 골격은 유지하면서, 자모 교체·소리 흔들기·리듬 변주를 통해 바로 복사해 쓸 수 있는 리스트를 제공합니다. 결과는 서비스에 저장되지 않으며, 사용자가 원하는 문구만 골라 외부 플랫폼에서 바로 활용할 수 있습니다.",
     useCases: [
@@ -89,6 +93,8 @@ const memeRegistry: ReadonlyArray<Meme> = [
   {
     slug: "yeogiseo-kkeuchi-anida",
     title: "여기서 끝이 아니다",
+    addedAt: "2026-02-21",
+    addedOrder: 3,
     description:
       "‘여기서 끝이 아니다’ 밈은 이미 충분히 과한 상황인데도 계속 재료나 행동을 덧붙여 폭주시키는 과장형 밈입니다. 시작은 그럴듯하지만, 뒤로 갈수록 상상도 못 한 요소가 줄줄이 추가되면서 ‘도대체 어디까지 가는 거냐’는 웃음을 유도하는 방식이 핵심입니다. 원본 맥락이 음식 레시피 소개 멘트였기 때문에, ‘정상 범위’를 넘겨버리는 리듬 자체가 밈의 정체성으로 굳어졌습니다.\n\n이 밈은 요리뿐 아니라 청소, 공부 계획, 일정 관리, 운동 루틴처럼 원래는 단순해야 할 주제가 과도한 체크리스트로 번질 때 특히 잘 맞습니다. 처음엔 현실적인 항목을 나열하다가, 중간부터 엉뚱한 단어를 섞고 마지막엔 말도 안 되는 오버킬 단계로 밀어붙이면 밈 온도가 확 올라갑니다. 즉 핵심은 정확성보다 ‘끝없이 덧붙이는 과잉’입니다.\n\nMemePop에서는 주제 상황과 단어 길이(개수)만 입력하면 ‘여기서 끝이 아니다~~’로 시작하는 무공백 폭주 문자열을 자동으로 생성합니다. 결과는 서버에 저장되지 않고 즉시 반환되며, 복사해서 커뮤니티·SNS·메신저에 바로 붙여 쓸 수 있습니다.",
     useCases: [
@@ -132,9 +138,15 @@ const memeRegistry: ReadonlyArray<Meme> = [
 ];
 
 const memeMap = new Map(memeRegistry.map((meme) => [meme.slug, meme]));
+const memesByLatest = [...memeRegistry].sort((a, b) => {
+  if (a.addedAt !== b.addedAt) {
+    return b.addedAt.localeCompare(a.addedAt);
+  }
+  return b.addedOrder - a.addedOrder;
+});
 
 export function getAllMemes(): ReadonlyArray<Meme> {
-  return memeRegistry;
+  return memesByLatest;
 }
 
 export function getMemeBySlug(slug: string): Meme | undefined {
@@ -142,7 +154,7 @@ export function getMemeBySlug(slug: string): Meme | undefined {
 }
 
 export function getAllMemeSlugs(): string[] {
-  return memeRegistry.map((meme) => meme.slug);
+  return memesByLatest.map((meme) => meme.slug);
 }
 
 export function isKnownSlug(slug: string): boolean {

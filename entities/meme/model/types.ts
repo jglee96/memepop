@@ -1,6 +1,8 @@
 export interface Meme {
   slug: string;
   title: string;
+  addedAt: string;
+  addedOrder: number;
   description: string;
   useCases: string[];
   examples: string[];

@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 
 import { AppThemeProvider } from "@/app/providers/theme-provider";
+import { getAllMemes } from "@/entities/meme";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, absoluteUrl } from "@/shared/config";
+import { getMemeLikeCounts } from "@/shared/lib/memeLikeStore";
+import { selectFeaturedMemeSlug } from "@/shared/lib/selectFeaturedMemeSlug";
 import { SiteHeader } from "@/widgets/site-header";
 
 import "./globals.css";
@@ -36,7 +39,11 @@ export const metadata: Metadata = {
   }
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }): React.JSX.Element {
+export const dynamic = "force-dynamic";
+
+export default async function RootLayout({ children }: { children: React.ReactNode }): Promise<React.JSX.Element> {
+  const featuredMemeSlug = await resolveFeaturedMemeSlug();
+
   return (
     <html lang="ko" suppressHydrationWarning>
       <body
@@ -49,7 +56,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }):
               <div className="h-80 w-[32rem] rounded-full bg-amber-200/40 blur-3xl dark:bg-amber-500/10" />
             </div>
             <div className="mx-auto w-full max-w-6xl px-4 pb-16 pt-6 sm:px-6 lg:px-8">
-              <SiteHeader />
+              <SiteHeader featuredMemeSlug={featuredMemeSlug} />
               {children}
             </div>
           </div>
@@ -57,4 +64,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }):
       </body>
     </html>
   );
+}
+
+async function resolveFeaturedMemeSlug(): Promise<string> {
+  const memes = getAllMemes();
+  try {
+    const likeCounts = await getMemeLikeCounts(memes.map((meme) => meme.slug));
+    return selectFeaturedMemeSlug(memes, likeCounts);
+  } catch {
+    return memes[0]?.slug ?? "eotteokharago";
+  }
 }

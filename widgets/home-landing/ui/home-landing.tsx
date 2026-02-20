@@ -5,9 +5,10 @@ import type { Meme } from "@/entities/meme";
 interface HomeLandingProps {
   memes: ReadonlyArray<Meme>;
   likeCounts: Readonly<Record<string, number>>;
+  featuredMemeSlug: string;
 }
 
-export function HomeLanding({ memes, likeCounts }: HomeLandingProps): React.JSX.Element {
+export function HomeLanding({ memes, likeCounts, featuredMemeSlug }: HomeLandingProps): React.JSX.Element {
   return (
     <main className="space-y-16 pb-6">
       <section className="py-10">
@@ -21,7 +22,7 @@ export function HomeLanding({ memes, likeCounts }: HomeLandingProps): React.JSX.
           <Link href="/memes" className="transition-opacity hover:opacity-60">
             밈 둘러보기
           </Link>
-          <Link href="/m/eotteokharago" className="transition-opacity hover:opacity-60">
+          <Link href={`/m/${featuredMemeSlug}`} className="transition-opacity hover:opacity-60">
             바로 시작
           </Link>
         </div>

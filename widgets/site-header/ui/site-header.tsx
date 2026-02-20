@@ -2,7 +2,11 @@ import Link from "next/link";
 
 import { ThemeToggle } from "@/shared/ui";
 
-export function SiteHeader(): React.JSX.Element {
+interface SiteHeaderProps {
+  featuredMemeSlug: string;
+}
+
+export function SiteHeader({ featuredMemeSlug }: SiteHeaderProps): React.JSX.Element {
   return (
     <header className="mb-12 border-b border-slate-300/80 pb-5 dark:border-slate-700/80">
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -19,7 +23,7 @@ export function SiteHeader(): React.JSX.Element {
           <Link href="/faq" className="transition-opacity hover:opacity-60">
             FAQ
           </Link>
-          <Link href="/m/eotteokharago" className="transition-opacity hover:opacity-60">
+          <Link href={`/m/${featuredMemeSlug}`} className="transition-opacity hover:opacity-60">
             첫 밈
           </Link>
           <ThemeToggle />

@@ -38,7 +38,12 @@ export function MemeLikeCount({ slug }: MemeLikeCountProps): React.JSX.Element {
     };
   }, [slug]);
 
-  return <>{count ?? 0}</>;
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full border border-slate-300/90 px-2 py-0.5 text-[11px] font-semibold tabular-nums tracking-[0.06em] text-slate-600 dark:border-slate-600 dark:text-slate-300">
+      <span aria-hidden>♥</span>
+      <span>{count ?? 0}</span>
+    </span>
+  );
 }
 
 async function parseResponse(response: Response): Promise<unknown> {

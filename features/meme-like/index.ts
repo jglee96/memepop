@@ -1,2 +1,2 @@
 export { MemeLikeCount } from "./ui/MemeLikeCount";
-export { MemeLikePanel } from "./ui/MemeLikePanel";
+export { MemeLikeButton } from "./ui/MemeLikeButton";

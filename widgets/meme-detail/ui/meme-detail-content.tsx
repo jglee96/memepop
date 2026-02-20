@@ -2,11 +2,10 @@ import type { Meme } from "@/entities/meme";
 
 interface MemeDetailContentProps {
   meme: Meme;
-  actions?: React.ReactNode;
   form: React.ReactNode;
 }
 
-export function MemeDetailContent({ meme, actions, form }: MemeDetailContentProps): React.JSX.Element {
+export function MemeDetailContent({ meme, form }: MemeDetailContentProps): React.JSX.Element {
   return (
     <main className="space-y-12 pb-6">
       <header className="border-y border-slate-300/80 py-8 dark:border-slate-700/80">
@@ -16,7 +15,6 @@ export function MemeDetailContent({ meme, actions, form }: MemeDetailContentProp
         </h1>
       </header>
 
-      {actions}
       {form}
     </main>
   );

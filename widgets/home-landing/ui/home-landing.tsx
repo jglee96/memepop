@@ -4,12 +4,13 @@ import type { Meme } from "@/entities/meme";
 
 interface HomeLandingProps {
   memes: ReadonlyArray<Meme>;
+  likeCounts: Readonly<Record<string, number>>;
 }
 
-export function HomeLanding({ memes }: HomeLandingProps): React.JSX.Element {
+export function HomeLanding({ memes, likeCounts }: HomeLandingProps): React.JSX.Element {
   return (
     <main className="space-y-16 pb-6">
-      <section className="border-y border-slate-300/80 py-10 dark:border-slate-700/80">
+      <section className="py-10">
         <p className="text-[11px] font-semibold uppercase tracking-[0.26em] text-slate-500 dark:text-slate-400">Meme Remix</p>
         <h1 className="mt-5 max-w-4xl font-['Space_Grotesk','SUIT','Pretendard','Noto_Sans_KR',sans-serif] text-5xl leading-[0.95] tracking-tight sm:text-7xl">
           문장을 밈처럼
@@ -35,12 +36,19 @@ export function HomeLanding({ memes }: HomeLandingProps): React.JSX.Element {
                 <span className="font-['Space_Grotesk','SUIT','Pretendard','Noto_Sans_KR',sans-serif] text-2xl tracking-tight transition-transform duration-200 group-hover:translate-x-1 sm:text-3xl">
                   {meme.title}
                 </span>
-                <span className="text-right">
+                <span className="flex flex-col items-end gap-1 text-right">
                   <span className="block text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500 transition-colors group-hover:text-slate-900 dark:text-slate-400 dark:group-hover:text-slate-100">
                     /m/{meme.slug}
                   </span>
-                  <span className="block pt-1 text-[11px] font-medium tracking-[0.08em] text-slate-500 dark:text-slate-400">
+                  <span className="block text-[11px] font-medium tracking-[0.08em] text-slate-500 dark:text-slate-400">
                     {meme.addedAt}
+                  </span>
+                  <span
+                    aria-label={`좋아요 ${likeCounts[meme.slug] ?? 0}`}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-slate-400/90 bg-transparent px-2.5 py-0.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-700 transition-colors group-hover:border-slate-900 group-hover:text-slate-900 dark:border-slate-500 dark:text-slate-300 dark:group-hover:border-slate-100 dark:group-hover:text-slate-100"
+                  >
+                    <span aria-hidden>♥</span>
+                    <span className="tabular-nums">좋아요 {likeCounts[meme.slug] ?? 0}</span>
                   </span>
                 </span>
               </Link>

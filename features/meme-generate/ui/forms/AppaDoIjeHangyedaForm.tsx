@@ -2,13 +2,13 @@
 
 import { useId, useMemo, useState } from "react";
 
-import { MemeLikeButton } from "@/features/meme-like";
-import { Button, Label, Textarea } from "@/shared/ui";
+import { Label, Textarea } from "@/shared/ui";
 
 import { useGenerateSubmission } from "../hooks/useGenerateSubmission";
+import { GenerateFormActions } from "./GenerateFormActions";
 import type { MemeFormProps } from "./types";
 
-export function AppaDoIjeHangyedaForm({ slug }: MemeFormProps): React.JSX.Element {
+export function AppaDoIjeHangyedaForm({ slug, actionRightSlot }: MemeFormProps): React.JSX.Element {
   const inputId = useId();
   const [input, setInput] = useState("");
   const { output, error, isPending, copyState, submit, copy } = useGenerateSubmission(slug);
@@ -41,30 +41,15 @@ export function AppaDoIjeHangyedaForm({ slug }: MemeFormProps): React.JSX.Elemen
           />
         </div>
 
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div className="flex flex-wrap gap-3">
-            <Button
-              type="submit"
-              variant="secondary"
-              size="sm"
-              className="border-slate-400/90 bg-transparent px-5 text-[11px] font-semibold uppercase tracking-[0.18em] hover:bg-slate-900 hover:text-white dark:border-slate-500 dark:hover:bg-slate-100 dark:hover:text-slate-900"
-              disabled={isSubmitDisabled}
-            >
-              {isPending ? "생성 중..." : "생성"}
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              size="sm"
-              className="border-slate-400/90 bg-transparent px-5 text-[11px] font-semibold uppercase tracking-[0.18em] hover:bg-slate-900 hover:text-white dark:border-slate-500 dark:hover:bg-slate-100 dark:hover:text-slate-900"
-              onClick={copy}
-              disabled={!output}
-            >
-              복사
-            </Button>
-          </div>
-          <MemeLikeButton slug={slug} />
-        </div>
+        <GenerateFormActions
+          isPending={isPending}
+          isSubmitDisabled={isSubmitDisabled}
+          hasOutput={Boolean(output)}
+          onCopy={() => {
+            void copy();
+          }}
+          rightSlot={actionRightSlot}
+        />
       </form>
 
       <div aria-live="polite" className="space-y-1 text-xs font-medium tracking-wide text-slate-600 dark:text-slate-300">

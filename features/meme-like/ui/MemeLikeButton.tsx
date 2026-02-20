@@ -3,24 +3,16 @@
 import { useEffect, useState } from "react";
 
 import { Button } from "@/shared/ui";
+import { fetchLikeCount, submitLike } from "@/features/meme-like/model/api";
 
 interface MemeLikeButtonProps {
   slug: string;
+  initialCount?: number;
 }
 
-interface LikeSuccessResponse {
-  count?: number;
-}
-
-interface LikeErrorResponse {
-  error?: {
-    message?: string;
-  };
-}
-
-export function MemeLikeButton({ slug }: MemeLikeButtonProps): React.JSX.Element {
-  const [count, setCount] = useState(0);
-  const [displayCount, setDisplayCount] = useState(0);
+export function MemeLikeButton({ slug, initialCount = 0 }: MemeLikeButtonProps): React.JSX.Element {
+  const [count, setCount] = useState(initialCount);
+  const [displayCount, setDisplayCount] = useState(initialCount);
   const [spinToken, setSpinToken] = useState(0);
   const [isPending, setIsPending] = useState(false);
   const [message, setMessage] = useState("");
@@ -29,21 +21,10 @@ export function MemeLikeButton({ slug }: MemeLikeButtonProps): React.JSX.Element
     let cancelled = false;
 
     void (async () => {
-      try {
-        const response = await fetch(`/api/likes/${slug}`, {
-          cache: "no-store"
-        });
-        const payload = (await parseResponse(response)) as LikeSuccessResponse;
-        if (!response.ok || typeof payload.count !== "number") {
-          return;
-        }
-
-        if (!cancelled) {
-          setCount(payload.count);
-          setDisplayCount(payload.count);
-        }
-      } catch {
-        // ignore count fetch errors
+      const fetchedCount = await fetchLikeCount(slug);
+      if (!cancelled && fetchedCount !== null) {
+        setCount(fetchedCount);
+        setDisplayCount(fetchedCount);
       }
     })();
 
@@ -66,22 +47,17 @@ export function MemeLikeButton({ slug }: MemeLikeButtonProps): React.JSX.Element
     spinTo(optimisticCount);
 
     try {
-      const response = await fetch(`/api/likes/${slug}`, {
-        method: "POST",
-        cache: "no-store"
-      });
-      const payload = (await parseResponse(response)) as LikeSuccessResponse & LikeErrorResponse;
-
-      if (!response.ok || typeof payload.count !== "number") {
+      const result = await submitLike(slug);
+      if (!result.ok) {
         setCount(previousCount);
         spinTo(previousCount);
-        setMessage(payload.error?.message ?? "좋아요 처리 중 오류가 발생했습니다.");
+        setMessage(result.message);
         return;
       }
 
-      setCount(payload.count);
-      if (payload.count !== optimisticCount) {
-        spinTo(payload.count);
+      setCount(result.count);
+      if (result.count !== optimisticCount) {
+        spinTo(result.count);
       }
     } catch {
       setCount(previousCount);
@@ -172,12 +148,4 @@ function SlotDigit({ digit, index, spinToken }: SlotDigitProps): React.JSX.Eleme
       </span>
     </span>
   );
-}
-
-async function parseResponse(response: Response): Promise<unknown> {
-  try {
-    return (await response.json()) as unknown;
-  } catch {
-    return {};
-  }
 }

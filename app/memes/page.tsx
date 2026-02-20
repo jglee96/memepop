@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { getAllMemes } from "@/entities/meme";
 import { absoluteUrl } from "@/shared/config";
+import { getMemeLikeCounts } from "@/shared/lib/memeLikeStore";
 import { MemeList } from "@/widgets/meme-list";
 
 export const metadata: Metadata = {
@@ -17,8 +18,11 @@ export const metadata: Metadata = {
   }
 };
 
-export default function MemesPage(): React.JSX.Element {
-  const memes = getAllMemes();
+export const dynamic = "force-dynamic";
 
-  return <MemeList memes={memes} />;
+export default async function MemesPage(): Promise<React.JSX.Element> {
+  const memes = getAllMemes();
+  const likeCounts = await getMemeLikeCounts(memes.map((meme) => meme.slug));
+
+  return <MemeList memes={memes} likeCounts={likeCounts} />;
 }

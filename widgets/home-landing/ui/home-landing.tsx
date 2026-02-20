@@ -28,7 +28,7 @@ export function HomeLanding({ memes, likeCounts }: HomeLandingProps): React.JSX.
       </section>
 
       <section className="grid gap-6 md:grid-cols-[9rem_minmax(0,1fr)] md:gap-10">
-        <h2 className="pt-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Routes</h2>
+        <h2 className="pt-1 text-[11px] font-semibold uppercase tracking-[0.22em] text-slate-500 dark:text-slate-400">Recent 3</h2>
         <ul className="divide-y divide-slate-300/80 border-y border-slate-300/80 dark:divide-slate-700/80 dark:border-slate-700/80">
           {memes.map((meme) => (
             <li key={meme.slug} className="py-4">

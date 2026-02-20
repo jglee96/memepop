@@ -14,8 +14,8 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function HomePage(): Promise<React.JSX.Element> {
-  const memes = getAllMemes();
-  const likeCounts = await getMemeLikeCounts(memes.map((meme) => meme.slug));
+  const recentMemes = getAllMemes().slice(0, 3);
+  const likeCounts = await getMemeLikeCounts(recentMemes.map((meme) => meme.slug));
 
-  return <HomeLanding memes={memes} likeCounts={likeCounts} />;
+  return <HomeLanding memes={recentMemes} likeCounts={likeCounts} />;
 }

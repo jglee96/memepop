@@ -47,20 +47,19 @@ export interface Meme {
   slug: string;
   title: string;
   description: string;
-  template: {
-    kind: "text" | "image" | "mixed";
-    instructions: string;
-    placeholders?: string[];
-  };
+  useCases: string[];
   examples: string[];
   faq: { q: string; a: string }[];
   seo: {
     keywords: string[];
     ogImage: string;
     canonicalPath: string;
+    summary: string;
   };
 }
 ```
+
+생성 입력 스키마/폼/프롬프트 지시는 `entities/meme`가 아닌 `features/meme-generate`의 밈별 프로파일에서 관리한다.
 
 ---
 

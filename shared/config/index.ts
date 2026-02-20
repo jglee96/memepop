@@ -1,4 +1,10 @@
-export { MAX_INPUT_LENGTH, MAX_OUTPUT_LENGTH } from "./constants";
+export {
+  MAX_INPUT_LENGTH,
+  MAX_OUTPUT_LENGTH,
+  WORD_COUNT_DEFAULT,
+  WORD_COUNT_MAX,
+  WORD_COUNT_MIN
+} from "./constants";
 export {
   RATE_LIMIT_MAX_PER_MINUTE,
   RATE_LIMIT_PENALTY_MS,

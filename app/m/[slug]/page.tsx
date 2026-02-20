@@ -58,7 +58,6 @@ export default async function MemePage({ params }: MemePageProps): Promise<React
   if (!meme) {
     notFound();
   }
-  const inputPlaceholder = meme.template.placeholders?.[0] ?? "예: 배고프다고";
 
-  return <MemeDetailContent meme={meme} form={<MemeGenerateForm slug={meme.slug} placeholder={inputPlaceholder} />} />;
+  return <MemeDetailContent meme={meme} form={<MemeGenerateForm slug={meme.slug} />} />;
 }

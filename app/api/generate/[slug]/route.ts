@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import { getMemeBySlug, isKnownSlug } from "@/entities/meme";
-import { generateMemeWithOpenAI, generateRequestSchema } from "@/features/meme-generate";
+import { generateMemeWithOpenAI, resolveGenerateRequestProfile } from "@/features/meme-generate";
 import { sha256 } from "@/shared/lib/hash";
 import { consumeRateLimit } from "@/shared/lib/rateLimit";
 import { buildPromptEnvelope, sanitizeOutput, validateUserInput } from "@/shared/security";
@@ -25,23 +25,25 @@ export async function POST(request: NextRequest, { params }: RouteParams): Promi
     return errorResponse(400, "INVALID_JSON", "요청 본문이 올바른 JSON 형식이 아닙니다.");
   }
 
-  const parsed = generateRequestSchema.safeParse(body);
+  const requestProfile = resolveGenerateRequestProfile(slug);
+  const parsed = requestProfile.requestSchema.safeParse(body);
   if (!parsed.success) {
     return errorResponse(400, "INVALID_INPUT", parsed.error.issues[0]?.message ?? "입력값이 올바르지 않습니다.");
   }
 
-  const validation = validateUserInput(parsed.data.input);
+  const normalizedRequest = requestProfile.normalizeInput(parsed.data);
+  const validation = validateUserInput(normalizedRequest.userInput);
   if (!validation.ok) {
     securityLog("BLOCKED_INPUT", {
       slug,
       code: validation.code,
       riskScore: validation.riskScore,
-      length: parsed.data.input.length
+      length: normalizedRequest.userInput.length
     });
     return errorResponse(400, validation.code, validation.message);
   }
 
-  const inputHash = sha256(validation.sanitized);
+  const inputHash = sha256(`${validation.sanitized}:${JSON.stringify(normalizedRequest.generationOptions)}`);
   const rateLimitKey = `${extractClientIp(request)}:${slug}`;
   const limitResult = consumeRateLimit(rateLimitKey, inputHash);
   if (!limitResult.allowed) {
@@ -66,9 +68,10 @@ export async function POST(request: NextRequest, { params }: RouteParams): Promi
   const promptEnvelope = buildPromptEnvelope({
     memeSlug: meme.slug,
     memeTitle: meme.title,
-    memeInstructions: meme.template.instructions,
+    styleContext: `${meme.title}: ${requestProfile.styleInstruction}`,
     styleExamples: meme.examples,
-    userInput: validation.sanitized
+    userInput: validation.sanitized,
+    generationOptions: normalizedRequest.generationOptions
   });
 
   const llmResult = await generateMemeWithOpenAI(promptEnvelope);

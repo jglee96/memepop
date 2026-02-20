@@ -1,0 +1,9 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#111216"/>
+  <circle cx="140" cy="520" r="240" fill="#F9731633"/>
+  <circle cx="1040" cy="120" r="220" fill="#34D39933"/>
+  <rect x="110" y="110" width="980" height="410" rx="32" fill="#1A1D24" stroke="#FACC1566"/>
+  <text x="165" y="246" fill="#F8FAFC" font-size="66" font-family="Pretendard, Apple SD Gothic Neo, sans-serif" font-weight="700">여기서 끝이 아니다 밈 생성기</text>
+  <text x="165" y="334" fill="#D1D5DB" font-size="40" font-family="Pretendard, Apple SD Gothic Neo, sans-serif">주제 + 단어 길이로 무공백 폭주 문구 생성</text>
+  <text x="165" y="426" fill="#FBBF24" font-size="34" font-family="Pretendard, Apple SD Gothic Neo, sans-serif">MemePop /m/yeogiseo-kkeuchi-anida</text>
+</svg>

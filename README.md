@@ -19,6 +19,7 @@
 
 - `appa-do-ije-hangyeda` (`/m/appa-do-ije-hangyeda`)
 - `eotteokharago` (`/m/eotteokharago`)
+- `yeogiseo-kkeuchi-anida` (`/m/yeogiseo-kkeuchi-anida`)
 
 ## Tech Stack
 
@@ -78,6 +79,12 @@ npm run build
 curl -X POST "http://localhost:3000/api/generate/eotteokharago" \
   -H "Content-Type: application/json" \
   -d '{"input":"배고프다고"}'
+```
+
+```bash
+curl -X POST "http://localhost:3000/api/generate/yeogiseo-kkeuchi-anida" \
+  -H "Content-Type: application/json" \
+  -d '{"topic":"청소 루틴이 점점 과해지는 상황","wordCount":50}'
 ```
 
 성공 응답:

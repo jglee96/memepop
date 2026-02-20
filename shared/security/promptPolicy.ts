@@ -14,21 +14,28 @@ export interface PromptEnvelope {
   styleContext: string;
   styleExamples: string[];
   userInput: string;
+  generationOptions: {
+    wordCount?: number;
+  };
 }
 
 export function buildPromptEnvelope(input: {
   memeSlug: string;
   memeTitle: string;
-  memeInstructions: string;
+  styleContext: string;
   styleExamples: string[];
   userInput: string;
+  generationOptions?: {
+    wordCount?: number;
+  };
 }): PromptEnvelope {
   return {
     systemPolicy: SYSTEM_POLICY,
     memeSlug: input.memeSlug,
     memeTitle: input.memeTitle,
-    styleContext: `${input.memeTitle}: ${input.memeInstructions}`,
+    styleContext: input.styleContext,
     styleExamples: input.styleExamples,
-    userInput: input.userInput
+    userInput: input.userInput,
+    generationOptions: input.generationOptions ?? {}
   };
 }

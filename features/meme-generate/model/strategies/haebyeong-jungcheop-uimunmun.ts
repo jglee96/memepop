@@ -9,25 +9,72 @@ import { buildCompactStyleContext } from "./buildCompactStyleContext";
 import type { MemeGenerationSlice } from "./types";
 
 const NESTING_UNIT_PATTERN =
-  /(되는지|있는지|맞는지|아닌지|가능한지|옳은지|적절한지|괜찮은지|되겠습니까)/g;
+  /(행동인지|것인지|무엇인지|공정한지|않는지|않은지|될지|되는지|있는지|맞는지|아닌지|가능한지|옳은지|적절한지|괜찮은지|되겠습니까)/g;
 const INVALID_OUTPUT_PATTERN = /(https?:\/\/|www\.|```|[#*_`[\]{}<>])/i;
 const LOW_VARIETY_PATTERN = /(보고드려도 되는지|문의드려도 되는지|검증받아도 되는지|확인받아도 되는지)/g;
 const PREMATURE_FINAL_ENDING_PATTERN = /되겠습니까/g;
 
-const BASE_QUESTION_CORE = "감히 제가 알아도 되겠습니까";
 type LayerPattern = (inner: string) => string;
 
-const LAYER_PATTERNS: ReadonlyArray<LayerPattern> = [
-  (inner) => `${inner}를 사용하는 것에 대한 허락을 구해도 되는지`,
-  (inner) => `${inner}를 묻는 보고를 올리는 것이 적절한지`,
+const CORE_PATTERNS: ReadonlyArray<(count: number) => string> = [
+  (count) => `${count}중첩 의문문을 여쭤보는 것에 대한 허락을 구하는 것이 오도기합짜세해병으로써 타의 모범이 될만한 행동인지`,
+  (count) => `${count}중첩 의문문을 사용하는 것에 대한 허락을 구해도 되는지`,
+  (count) => `${count}중첩 의문문에 대한 질문이 있음을 보고하는 것이 적절한지`,
+  (count) => `${count}중첩 의문문을 묻는 것이 옳은 일인지`,
+  (count) => `${count}중첩 의문문을 알고 싶은 점이 있음을 알려도 되는 것인지`,
+  (count) => `${count}중첩 의문문을 발설해도 될지에 대한 의문이 있는지`,
+  (count) => `${count}중첩 의문문을 확인받고자 하는 점이 해병 예법에 맞는지`,
+  (count) => `${count}중첩 의문문을 보고드리는 것이 기열찐빠황룡같지는 않은지`
+];
+
+const NON_FINAL_WRAPPERS: ReadonlyArray<LayerPattern> = [
+  (inner) => `${inner}를 확인받을 수 있는지`,
+  (inner) => `${inner}에 대하여 의문이 존재함을 표현해도 되는지`,
+  (inner) => `${inner}에 관한 문제를 제기하는 것이 기열찐빠황룡같지는 않은지`,
+  (inner) => `${inner}를 체크해주시는 것이 가능한지`,
+  (inner) => `${inner}를 알고 싶은 점이 있음을 알려도 되는 것인지`,
+  (inner) => `${inner}를 묻는 것이 옳은 일인지`,
+  (inner) => `${inner}를 판단해주실 수 있는지`,
+  (inner) => `${inner}에 대한 답변을 감히 요구하는 것을 드러내도 되는지`,
+  (inner) => `${inner}를 가르쳐주실 수 있는지의 여부에 대해 의문을 가져도 되는지`,
+  (inner) => `${inner}에 대한 답을 요청하는 것을 알렸을때 이상이 없는지`,
+  (inner) => `${inner}에 대해 인지할 자격이 본 해병에게 있는지`,
+  (inner) => `${inner}를 정확히 이야기해주십사 감찰해주실 수 있는지`,
+  (inner) => `${inner}를 시인해주실 수 있는지`,
+  (inner) => `${inner}를 말씀해주실 수 있는지`,
+  (inner) => `${inner}에 대해 질문 했을 경우 본 해병이 해병수육이 되지는 않는지`,
+  (inner) => `${inner}에 대해 판정을 해 주실 수 있는지`,
+  (inner) => `${inner}에 대한 요청을 하는 것을 받아들이실 수 있는지`,
+  (inner) => `${inner}를 감사(監査)해주실 수 있는지`,
+  (inner) => `${inner}를 묻는것이 기열찐빠같은 요청에 해당하지 않는지`,
+  (inner) => `${inner}에 대한 답이 본 해병에게 중요한 것임을 말씀드려도 되는지`,
+  (inner) => `${inner}에 대해 발언하는 것이 무례하지는 않은지`,
+  (inner) => `${inner}를 궁금해해도 되는 것인지`,
+  (inner) => `${inner}에 대하여 명쾌한 해답을 해 주실 수 있는지`,
+  (inner) => `${inner}를 바라도 되는지`,
+  (inner) => `${inner}를 알기 위해 중첩의문문을 계속해도 되는지`,
+  (inner) => `${inner}에 대해 거북하게 느끼시지는 않는지`,
+  (inner) => `${inner}를 본 해병이 인지하게 해 주실 수 있는지`,
+  (inner) => `${inner}를 알려주시는 것이 괜찮은지`,
+  (inner) => `${inner}에 대해 심판해주실 수 있는지`,
+  (inner) => `${inner}를 감히 제가 알게 되었다고 가정했을 때 해병대 내부에 이변이 생기지는 않는지`,
+  (inner) => `${inner}가 공정한지`,
+  (inner) => `${inner}를 심의해주실 수 있는지`,
+  (inner) => `${inner}에 대해 아뢰어도 되는지`,
+  (inner) => `${inner}에 대한 의문을 던지는 것이 해병의 명예를 실추시키는 것은 아닌지`,
+  (inner) => `${inner}에 대한 정답이 무엇인지`,
+  (inner) => `${inner}에 대한 질문의 적절성을 검사받을 수 있는지`,
+  (inner) => `${inner}에 대한 설문을 하여도 괜찮은지`,
+  (inner) => `${inner}를 검정(檢定)해주실 수 있는지`,
+  (inner) => `${inner}를 결정해주실 수 있는지`,
+  (inner) => `${inner}에 대해 본 해병이 감지해도 되는지`,
+  (inner) => `${inner}의 여부를 지각(知覺)해도 되는지`,
+  (inner) => `${inner}를 판단을 받을 수 있는지`,
   (inner) => `${inner}를 발설하는 태도가 해병 예법에 맞는지`,
-  (inner) => `${inner}를 문제 삼는 행위가 기열찐빠황룡은 아닌지`,
-  (inner) => `${inner}를 감히 제기하는 본 해병에게 의문이 남아 있는지`,
   (inner) => `${inner}를 상부에 전달하는 절차를 개시하는 것이 가능한지`,
   (inner) => `${inner}를 확인받고자 졸라보는 시도가 오도기합짜세에 옳은지`,
   (inner) => `${inner}를 두고 판정을 청하는 문장을 늘여놓는 것이 적절한지`,
   (inner) => `${inner}를 여쭈어보려는 마음을 숨기지 않아도 괜찮은지`,
-  (inner) => `${inner}를 본 해병이 알아도 되겠습니까`,
   (inner) => `${inner}를 보고문처럼 읊는 버릇이 해병수육행은 아닌지`,
   (inner) => `${inner}를 감찰 요청으로 둔갑시키는 술수가 아직 살아 있는지`,
   (inner) => `${inner}를 검열받는 장면을 상상하며 떠들어도 되는지`,
@@ -42,6 +89,13 @@ const LAYER_PATTERNS: ReadonlyArray<LayerPattern> = [
   (inner) => `${inner}를 끝내 못 참고 또다시 포장해 들이미는 행태가 맞는지`,
   (inner) => `${inner}를 두고 해병식 장광설을 더 얹는 작태가 결례는 아닌지`,
   (inner) => `${inner}를 지금 이 시점에 다시 캐묻는 패기가 아직도 가능한지`
+];
+
+const FINAL_WRAPPERS: ReadonlyArray<LayerPattern> = [
+  (inner) => `${inner}를 감히 제가 알아도 되겠습니까`,
+  (inner) => `${inner}를 본 해병이 끝내 알아도 되겠습니까`,
+  (inner) => `${inner}를 최종적으로 여쭈어도 되겠습니까`,
+  (inner) => `${inner}를 마지막으로 확인해도 되겠습니까`
 ];
 
 export const haebyeongJungcheopUimunmunSlice: MemeGenerationSlice = {
@@ -62,6 +116,7 @@ export const haebyeongJungcheopUimunmunSlice: MemeGenerationSlice = {
       "FORMAT: no numbering, no bullet list, no markdown, no code block.",
       "FORMAT: do not separate question units with commas. Every non-final unit must continue into the next unit as an unfinished nested clause.",
       "GRAMMAR: only the final unit may end with '되겠습니까?'. Every earlier unit must stay unfinished as forms like '되는지', '것인지', '있는지', '여부', '답변을 받고자 함'.",
+      "EXAMPLE_UNIT: '...에 대한 질문의 적절성을 검사받을 수 있는지', '...를 감찰해주실 수 있는지', '...의 여부를 지각(知覺)해도 되는지'.",
       "HARD: include exactly TARGET_NESTING_COUNT nested question units and end with one question mark.",
       "VOICE: absurdly formal, overcommitted, dramatic '해병' meme cadence.",
       "QUALITY: each layer should feel like a different bureaucratic or dramatic maneuver, not the same verb repeated.",
@@ -82,7 +137,7 @@ export const haebyeongJungcheopUimunmunSlice: MemeGenerationSlice = {
   },
   buildFallbackOutput(envelope): string {
     const targetNestingCount = resolveRequestedNestingCount(envelope);
-    return buildDeterministicHaebyeongNestedQuestion(targetNestingCount);
+    return buildExampleDrivenHaebyeongNestedQuestion(targetNestingCount);
   },
   estimateMaxOutputTokens(envelope, strictMode): number {
     const targetNestingCount = resolveRequestedNestingCount(envelope);
@@ -103,6 +158,11 @@ export function repairHaebyeongJungcheopUimunmunOutput(output: string, targetNes
 
 export function countHaebyeongNestedQuestionUnits(output: string): number {
   const normalized = normalizeOutputText(output);
+  const generatedCount = extractDeclaredNestingCount(normalized);
+  if (generatedCount !== null) {
+    return generatedCount;
+  }
+
   const matches = normalized.match(NESTING_UNIT_PATTERN);
   return matches?.length ?? 0;
 }
@@ -149,11 +209,11 @@ function isValidHaebyeongNestedQuestionOutput(output: string, targetNestingCount
 function minimallyRepairHaebyeongNestedQuestion(output: string, targetNestingCount: number): string {
   const normalized = normalizeOutputText(output);
   if (!normalized) {
-    return buildDeterministicHaebyeongNestedQuestion(targetNestingCount);
+    return buildExampleDrivenHaebyeongNestedQuestion(targetNestingCount);
   }
 
   if (INVALID_OUTPUT_PATTERN.test(normalized)) {
-    return buildDeterministicHaebyeongNestedQuestion(targetNestingCount);
+    return buildExampleDrivenHaebyeongNestedQuestion(targetNestingCount);
   }
 
   const stitchedOutput = stitchSerialQuestions(normalized);
@@ -161,62 +221,11 @@ function minimallyRepairHaebyeongNestedQuestion(output: string, targetNestingCou
   const ensuredQuestion = ensureQuestionMark(chainedOutput);
   const countedUnits = countHaebyeongNestedQuestionUnits(ensuredQuestion);
 
-  if (countedUnits === 0) {
-    return buildDeterministicHaebyeongNestedQuestion(targetNestingCount);
-  }
-
-  if (countedUnits === targetNestingCount) {
+  if (countedUnits === targetNestingCount && !hasPrematureFinalEnding(ensuredQuestion) && !/,/.test(ensuredQuestion)) {
     return ensuredQuestion;
   }
 
-  if (countedUnits < targetNestingCount) {
-    return addOuterLayers(ensuredQuestion, targetNestingCount - countedUnits);
-  }
-
-  return softenExtraLayers(ensuredQuestion, countedUnits - targetNestingCount, targetNestingCount);
-}
-
-function addOuterLayers(base: string, missingCount: number): string {
-  let output = stripTrailingQuestionMark(base);
-
-  for (let index = 0; index < missingCount; index += 1) {
-    output = resolveLayerPattern(index)(output);
-  }
-
-  return ensureQuestionMark(normalizeOutputText(output));
-}
-
-function softenExtraLayers(base: string, overflowCount: number, targetNestingCount: number): string {
-  let output = stripTrailingQuestionMark(base);
-  let remaining = overflowCount;
-
-  for (let index = SOFTEN_REPLACEMENTS.length - 1; index >= 0 && remaining > 0; index -= 1) {
-    const { pattern, replacement } = SOFTEN_REPLACEMENTS[index];
-    if (!pattern.test(output)) {
-      continue;
-    }
-
-    output = output.replace(pattern, replacement);
-    remaining -= 1;
-  }
-
-  if (remaining > 0) {
-    return buildDeterministicHaebyeongNestedQuestion(targetNestingCount);
-  }
-
-  return ensureQuestionMark(normalizeOutputText(output));
-}
-
-function buildDeterministicHaebyeongNestedQuestion(targetNestingCount: number): string {
-  const count = clampNestingCount(targetNestingCount);
-  let clause = BASE_QUESTION_CORE;
-
-  for (let index = 0; index < count - 1; index += 1) {
-    const pattern = resolveLayerPattern(index);
-    clause = pattern(clause);
-  }
-
-  return normalizeOutputText(`먼저 ${count}중첩 의문문 전문입니다. 악! ${clause}?`);
+  return buildExampleDrivenHaebyeongNestedQuestion(targetNestingCount);
 }
 
 function resolveRequestedNestingCount(envelope: PromptEnvelope): number {
@@ -228,13 +237,13 @@ function clampNestingCount(value: number): number {
 }
 
 function resolveLayerPattern(index: number): LayerPattern {
-  const shuffledIndex = (index * 7 + Math.floor(index / 3) + 3) % LAYER_PATTERNS.length;
-  return LAYER_PATTERNS[shuffledIndex] ?? LAYER_PATTERNS[0];
+  const shuffledIndex = (index * 11 + Math.floor(index / 2) + 5) % NON_FINAL_WRAPPERS.length;
+  return NON_FINAL_WRAPPERS[shuffledIndex] ?? NON_FINAL_WRAPPERS[0];
 }
 
 function minimumDistinctEndings(targetNestingCount: number): number {
   if (targetNestingCount <= 8) {
-    return 3;
+    return 2;
   }
   if (targetNestingCount <= 20) {
     return 4;
@@ -268,30 +277,22 @@ function normalizeOutputText(output: string): string {
     .trim();
 }
 
+function extractDeclaredNestingCount(output: string): number | null {
+  const matched = output.match(/(\d+)중첩 의문문/);
+  if (!matched?.[1]) {
+    return null;
+  }
+
+  const parsed = Number(matched[1]);
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
 function stitchSerialQuestions(output: string): string {
   if (!/,/.test(output)) {
     return output;
   }
 
-  const rawSegments = output
-    .split(",")
-    .map((segment) => segment.trim())
-    .filter(Boolean);
-
-  if (rawSegments.length <= 1) {
-    return output.replace(/,\s*/g, " ");
-  }
-
-  const chainedSegments = rawSegments.map((segment, index) => {
-    const cleaned = stripTrailingQuestionMark(segment);
-    if (index === rawSegments.length - 1) {
-      return cleaned;
-    }
-
-    return toNestedConnector(cleaned);
-  });
-
-  return chainedSegments.join(" ");
+  return output.replace(/,\s*/g, " ");
 }
 
 function rewritePrematureFinalEndings(output: string): string {
@@ -306,40 +307,28 @@ function rewritePrematureFinalEndings(output: string): string {
   return `${prefix}${suffix}`;
 }
 
-function toNestedConnector(segment: string): string {
-  for (const { from, to } of CONNECTOR_ENDINGS) {
-    if (segment.endsWith(from)) {
-      return `${segment.slice(0, -from.length)}${to}`;
-    }
+function buildExampleDrivenHaebyeongNestedQuestion(targetNestingCount: number): string {
+  const count = clampNestingCount(targetNestingCount);
+  if (count === 1) {
+    return normalizeOutputText(`${selectFinalWrapper(count)(`${count}중첩 의문문`)}?`);
   }
 
-  if (segment.endsWith("까")) {
-    return `${segment}를`;
+  let clause = selectCorePattern(count)(count);
+
+  for (let index = 0; index < count - 2; index += 1) {
+    clause = resolveLayerPattern(index)(clause);
   }
 
-  return `${segment}에 대한 의문이 있는지를`;
+  clause = selectFinalWrapper(count)(clause);
+  return normalizeOutputText(`${clause}?`);
 }
 
-const SOFTEN_REPLACEMENTS: ReadonlyArray<{ pattern: RegExp; replacement: string }> = [
-  { pattern: /되는지(?!.*되는지)/, replacement: "된다는 점을 아뢰는 바" },
-  { pattern: /있는지(?!.*있는지)/, replacement: "있다는 판단을 덧붙이는 바" },
-  { pattern: /맞는지(?!.*맞는지)/, replacement: "맞다는 취지임을 알리는 바" },
-  { pattern: /아닌지(?!.*아닌지)/, replacement: "아니라는 우려를 적시하는 바" },
-  { pattern: /가능한지(?!.*가능한지)/, replacement: "가능하다는 추측을 보태는 바" },
-  { pattern: /옳은지(?!.*옳은지)/, replacement: "옳다는 명분을 끌어오는 바" },
-  { pattern: /적절한지(?!.*적절한지)/, replacement: "적절하다는 투정을 얹는 바" },
-  { pattern: /괜찮은지(?!.*괜찮은지)/, replacement: "괜찮다는 핑계를 세우는 바" },
-  { pattern: /되겠습니까(?!.*되겠습니까)/, replacement: "됨을 허락받고 싶다는 바" }
-];
+function selectCorePattern(seed: number): (count: number) => string {
+  const index = (seed * 5 + 3) % CORE_PATTERNS.length;
+  return CORE_PATTERNS[index] ?? CORE_PATTERNS[0];
+}
 
-const CONNECTOR_ENDINGS: ReadonlyArray<{ from: string; to: string }> = [
-  { from: "되는지", to: "되는지를" },
-  { from: "있는지", to: "있는지를" },
-  { from: "맞는지", to: "맞는지를" },
-  { from: "아닌지", to: "아닌지를" },
-  { from: "가능한지", to: "가능한지를" },
-  { from: "옳은지", to: "옳은지를" },
-  { from: "적절한지", to: "적절한지를" },
-  { from: "괜찮은지", to: "괜찮은지를" },
-  { from: "되겠습니까", to: "되는지를" }
-];
+function selectFinalWrapper(seed: number): LayerPattern {
+  const index = (seed * 3 + 1) % FINAL_WRAPPERS.length;
+  return FINAL_WRAPPERS[index] ?? FINAL_WRAPPERS[0];
+}

@@ -1,6 +1,14 @@
 import { z } from "zod";
 
-import { MAX_INPUT_LENGTH, WORD_COUNT_DEFAULT, WORD_COUNT_MAX, WORD_COUNT_MIN } from "@/shared/config";
+import {
+  MAX_INPUT_LENGTH,
+  NESTING_COUNT_DEFAULT,
+  NESTING_COUNT_MAX,
+  NESTING_COUNT_MIN,
+  WORD_COUNT_DEFAULT,
+  WORD_COUNT_MAX,
+  WORD_COUNT_MIN
+} from "@/shared/config";
 
 const commonInputField = z
   .string()
@@ -21,10 +29,20 @@ const yeogiseoKkeuchiAnidaSchema = z.object({
     .optional()
 });
 
+const haebyeongJungcheopUimunmunSchema = z.object({
+  nestingCount: z
+    .number()
+    .int("중첩 횟수는 정수여야 합니다.")
+    .min(NESTING_COUNT_MIN, `중첩 횟수는 최소 ${NESTING_COUNT_MIN}회입니다.`)
+    .max(NESTING_COUNT_MAX, `중첩 횟수는 최대 ${NESTING_COUNT_MAX}회입니다.`)
+    .optional()
+});
+
 export interface NormalizedGenerateRequest {
   userInput: string;
   generationOptions: {
     wordCount?: number;
+    nestingCount?: number;
   };
 }
 
@@ -91,10 +109,29 @@ const yeogiseoKkeuchiAnidaProfile: GenerateRequestProfile = {
   }
 };
 
+const haebyeongJungcheopUimunmunProfile: GenerateRequestProfile = {
+  slug: "haebyeong-jungcheop-uimunmun",
+  styleInstruction:
+    "해병식 과장 어조로 의문문을 n회 중첩한다. 결과는 한 문단 단일 본문이며, 공격/비하/개인정보 요구 없이 허락과 확인을 반복적으로 묻는 리듬을 유지한다.",
+  requestSchema: haebyeongJungcheopUimunmunSchema,
+  normalizeInput(data: unknown): NormalizedGenerateRequest {
+    const parsed = haebyeongJungcheopUimunmunSchema.parse(data);
+    const nestingCount = parsed.nestingCount ?? NESTING_COUNT_DEFAULT;
+
+    return {
+      userInput: `${nestingCount}중첩 의문문`,
+      generationOptions: {
+        nestingCount
+      }
+    };
+  }
+};
+
 const profiles: ReadonlyArray<GenerateRequestProfile> = [
   appaDoIjeHangyedaProfile,
   eotteokharagoProfile,
-  yeogiseoKkeuchiAnidaProfile
+  yeogiseoKkeuchiAnidaProfile,
+  haebyeongJungcheopUimunmunProfile
 ];
 
 const profileMap = new Map(profiles.map((profile) => [profile.slug, profile]));

@@ -20,6 +20,7 @@
 - `appa-do-ije-hangyeda` (`/m/appa-do-ije-hangyeda`)
 - `eotteokharago` (`/m/eotteokharago`)
 - `yeogiseo-kkeuchi-anida` (`/m/yeogiseo-kkeuchi-anida`)
+- `haebyeong-jungcheop-uimunmun` (`/m/haebyeong-jungcheop-uimunmun`)
 
 ## Tech Stack
 
@@ -88,6 +89,12 @@ curl -X POST "http://localhost:3000/api/generate/eotteokharago" \
 curl -X POST "http://localhost:3000/api/generate/yeogiseo-kkeuchi-anida" \
   -H "Content-Type: application/json" \
   -d '{"topic":"청소 루틴이 점점 과해지는 상황","wordCount":50}'
+```
+
+```bash
+curl -X POST "http://localhost:3000/api/generate/haebyeong-jungcheop-uimunmun" \
+  -H "Content-Type: application/json" \
+  -d '{"nestingCount":69}'
 ```
 
 성공 응답:

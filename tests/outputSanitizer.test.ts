@@ -16,4 +16,14 @@ describe("outputSanitizer", () => {
     const result = sanitizeOutput("계정 정보와 password를 입력하세요");
     expect(result.ok).toBe(false);
   });
+
+  it("truncates output to 4000 chars", () => {
+    const longOutput = "가".repeat(4100);
+    const result = sanitizeOutput(longOutput);
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.output.length).toBe(4000);
+    }
+  });
 });

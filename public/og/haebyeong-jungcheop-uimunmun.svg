@@ -1,0 +1,9 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#0B1120"/>
+  <circle cx="180" cy="520" r="250" fill="#22D3EE33"/>
+  <circle cx="1030" cy="120" r="220" fill="#FB718533"/>
+  <rect x="105" y="105" width="990" height="420" rx="34" fill="#121A2D" stroke="#38BDF866"/>
+  <text x="165" y="246" fill="#E2E8F0" font-size="64" font-family="Pretendard, Apple SD Gothic Neo, sans-serif" font-weight="700">해병 중첩의문문 생성기</text>
+  <text x="165" y="336" fill="#C7D2FE" font-size="38" font-family="Pretendard, Apple SD Gothic Neo, sans-serif">n회 중첩으로 허락-질문을 과장해 한 문단 생성</text>
+  <text x="165" y="426" fill="#67E8F9" font-size="34" font-family="Pretendard, Apple SD Gothic Neo, sans-serif">MemePop /m/haebyeong-jungcheop-uimunmun</text>
+</svg>

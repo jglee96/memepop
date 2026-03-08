@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { AppaDoIjeHangyedaForm } from "./forms/AppaDoIjeHangyedaForm";
 import { DefaultMemeForm } from "./forms/DefaultMemeForm";
 import { EotteokharagoForm } from "./forms/EotteokharagoForm";
+import { HaebyeongJungcheopUimunmunForm } from "./forms/HaebyeongJungcheopUimunmunForm";
 import { YeogiseoKkeuchiAnidaForm } from "./forms/YeogiseoKkeuchiAnidaForm";
 
 interface MemeGenerateFormProps {
@@ -18,6 +19,8 @@ export function MemeGenerateForm({ slug, actionRightSlot }: MemeGenerateFormProp
       return <EotteokharagoForm slug={slug} actionRightSlot={actionRightSlot} />;
     case "yeogiseo-kkeuchi-anida":
       return <YeogiseoKkeuchiAnidaForm slug={slug} actionRightSlot={actionRightSlot} />;
+    case "haebyeong-jungcheop-uimunmun":
+      return <HaebyeongJungcheopUimunmunForm slug={slug} actionRightSlot={actionRightSlot} />;
     default:
       return <DefaultMemeForm slug={slug} actionRightSlot={actionRightSlot} />;
   }

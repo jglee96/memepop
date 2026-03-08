@@ -16,6 +16,7 @@ export interface PromptEnvelope {
   userInput: string;
   generationOptions: {
     wordCount?: number;
+    nestingCount?: number;
   };
 }
 
@@ -27,6 +28,7 @@ export function buildPromptEnvelope(input: {
   userInput: string;
   generationOptions?: {
     wordCount?: number;
+    nestingCount?: number;
   };
 }): PromptEnvelope {
   return {

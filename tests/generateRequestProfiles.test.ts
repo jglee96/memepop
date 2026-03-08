@@ -45,4 +45,36 @@ describe("generate request profiles", () => {
 
     expect(parsed.success).toBe(false);
   });
+
+  it("parses nestingCount payload for haebyeong-jungcheop-uimunmun", () => {
+    const profile = resolveGenerateRequestProfile("haebyeong-jungcheop-uimunmun");
+    const parsed = profile.requestSchema.safeParse({ nestingCount: 69 });
+
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(profile.normalizeInput(parsed.data)).toEqual({
+        userInput: "69중첩 의문문",
+        generationOptions: { nestingCount: 69 }
+      });
+    }
+  });
+
+  it("uses default nestingCount when omitted in haebyeong-jungcheop-uimunmun", () => {
+    const profile = resolveGenerateRequestProfile("haebyeong-jungcheop-uimunmun");
+    const parsed = profile.requestSchema.safeParse({});
+
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(profile.normalizeInput(parsed.data).generationOptions.nestingCount).toBe(69);
+    }
+  });
+
+  it("rejects out-of-range nestingCount in haebyeong-jungcheop-uimunmun", () => {
+    const profile = resolveGenerateRequestProfile("haebyeong-jungcheop-uimunmun");
+
+    expect(profile.requestSchema.safeParse({ nestingCount: 0 }).success).toBe(false);
+    expect(profile.requestSchema.safeParse({ nestingCount: 121 }).success).toBe(false);
+    expect(profile.requestSchema.safeParse({ nestingCount: 69.5 }).success).toBe(false);
+    expect(profile.requestSchema.safeParse({ nestingCount: "69" }).success).toBe(false);
+  });
 });

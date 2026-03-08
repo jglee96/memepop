@@ -2,7 +2,7 @@ import { resolveMemeGenerationSlice } from "./strategies";
 import type { PromptEnvelope } from "@/shared/security";
 
 const OPENAI_RESPONSES_API_URL = "https://api.openai.com/v1/responses";
-const OPENAI_TIMEOUT_MS = 15_000;
+const OPENAI_TIMEOUT_MS = 30_000;
 
 interface OpenAIContentItem {
   text?: string;
@@ -25,67 +25,95 @@ export type OpenAIGenerationResult =
     };
 
 export async function generateMemeWithOpenAI(envelope: PromptEnvelope): Promise<OpenAIGenerationResult> {
+  const slice = resolveMemeGenerationSlice(envelope.memeSlug);
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
+    const fallback = buildFallbackOutput(slice, envelope);
+    if (fallback) {
+      return { ok: true, output: fallback };
+    }
     return { ok: false, code: "OPENAI_KEY_MISSING" };
   }
 
   const model = process.env.OPENAI_MODEL ?? "gpt-4.1-mini";
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), OPENAI_TIMEOUT_MS);
-  const slice = resolveMemeGenerationSlice(envelope.memeSlug);
 
   try {
     const firstAttempt = await requestGeneration({
       apiKey,
       model,
       envelope,
-      strictMode: false,
-      signal: controller.signal
+      strictMode: false
     });
     if (!firstAttempt.ok) {
+      const fallback = buildFallbackOutput(slice, envelope);
+      if (fallback) {
+        return { ok: true, output: fallback };
+      }
       return { ok: false, code: "OPENAI_REQUEST_FAILED" };
     }
 
     if (!firstAttempt.output) {
+      const fallback = buildFallbackOutput(slice, envelope);
+      if (fallback) {
+        return { ok: true, output: fallback };
+      }
       return { ok: false, code: "OPENAI_EMPTY_OUTPUT" };
     }
 
-    const shouldRetry = slice.shouldRetry?.(envelope, firstAttempt.output) ?? false;
+    const firstOutput = normalizeOutput(firstAttempt.output);
+    const shouldRetry = slice.shouldRetry?.(envelope, firstOutput) ?? false;
 
     if (!shouldRetry) {
       return {
         ok: true,
-        output: normalizeOutput(firstAttempt.output)
+        output: applyRepair(slice, envelope, firstOutput)
       };
     }
 
-    const secondAttempt = await requestGeneration({
-      apiKey,
-      model,
-      envelope,
-      strictMode: true,
-      signal: controller.signal
-    });
+    if (slice.repairOutput) {
+      return {
+        ok: true,
+        output: applyRepair(slice, envelope, firstOutput)
+      };
+    }
+
+    let secondAttempt: RequestGenerationResult;
+    try {
+      secondAttempt = await requestGeneration({
+        apiKey,
+        model,
+        envelope,
+        strictMode: true
+      });
+    } catch {
+      return {
+        ok: true,
+        output: applyRepair(slice, envelope, firstOutput)
+      };
+    }
 
     if (!secondAttempt.ok || !secondAttempt.output) {
       return {
         ok: true,
-        output: normalizeOutput(firstAttempt.output)
+        output: applyRepair(slice, envelope, firstOutput)
       };
     }
 
+    const secondOutput = normalizeOutput(secondAttempt.output);
     return {
       ok: true,
-      output: normalizeOutput(secondAttempt.output)
+      output: applyRepair(slice, envelope, secondOutput)
     };
   } catch (error) {
+    const fallback = buildFallbackOutput(slice, envelope);
+    if (fallback) {
+      return { ok: true, output: fallback };
+    }
+
     if (error instanceof Error && error.name === "AbortError") {
       return { ok: false, code: "OPENAI_TIMEOUT" };
     }
     return { ok: false, code: "OPENAI_REQUEST_FAILED" };
-  } finally {
-    clearTimeout(timeout);
   }
 }
 
@@ -94,7 +122,6 @@ interface RequestGenerationInput {
   model: string;
   envelope: PromptEnvelope;
   strictMode: boolean;
-  signal: AbortSignal;
 }
 
 type RequestGenerationResult = { ok: true; output: string | null } | { ok: false };
@@ -105,32 +132,55 @@ async function requestGeneration(input: RequestGenerationInput): Promise<Request
     slice.estimateMaxOutputTokens?.(input.envelope, input.strictMode) ??
     estimateDefaultMaxOutputTokens(input.envelope, input.strictMode);
 
-  const response = await fetch(OPENAI_RESPONSES_API_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${input.apiKey}`
-    },
-    body: JSON.stringify({
-      model: input.model,
-      temperature: input.strictMode ? 0.9 : 0.82,
-      max_output_tokens: maxOutputTokens,
-      instructions: input.envelope.systemPolicy,
-      input: slice.buildPrompt(input.envelope, input.strictMode)
-    }),
-    signal: input.signal
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), OPENAI_TIMEOUT_MS);
 
-  if (!response.ok) {
-    return { ok: false };
+  try {
+    const response = await fetch(OPENAI_RESPONSES_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${input.apiKey}`
+      },
+      body: JSON.stringify({
+        model: input.model,
+        temperature: input.strictMode ? 0.9 : 0.82,
+        max_output_tokens: maxOutputTokens,
+        instructions: input.envelope.systemPolicy,
+        input: slice.buildPrompt(input.envelope, input.strictMode)
+      }),
+      signal: controller.signal
+    });
+
+    if (!response.ok) {
+      return { ok: false };
+    }
+
+    const payload = (await response.json()) as OpenAIResponsePayload;
+    return { ok: true, output: extractOutputText(payload) };
+  } finally {
+    clearTimeout(timeout);
   }
-
-  const payload = (await response.json()) as OpenAIResponsePayload;
-  return { ok: true, output: extractOutputText(payload) };
 }
 
 function normalizeOutput(output: string): string {
   return output.replace(/\n+/g, ", ").replace(/\s+/g, " ").trim();
+}
+
+function applyRepair(slice: ReturnType<typeof resolveMemeGenerationSlice>, envelope: PromptEnvelope, output: string): string {
+  return slice.repairOutput?.(envelope, output) ?? output;
+}
+
+function buildFallbackOutput(
+  slice: ReturnType<typeof resolveMemeGenerationSlice>,
+  envelope: PromptEnvelope
+): string | null {
+  const fallback = slice.buildFallbackOutput?.(envelope);
+  if (!fallback) {
+    return null;
+  }
+
+  return normalizeOutput(fallback);
 }
 
 function estimateDefaultMaxOutputTokens(envelope: PromptEnvelope, strictMode: boolean): number {

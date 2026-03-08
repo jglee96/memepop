@@ -70,13 +70,6 @@ export async function generateMemeWithOpenAI(envelope: PromptEnvelope): Promise<
       };
     }
 
-    if (slice.repairOutput) {
-      return {
-        ok: true,
-        output: applyRepair(slice, envelope, firstOutput)
-      };
-    }
-
     let secondAttempt: RequestGenerationResult;
     try {
       secondAttempt = await requestGeneration({

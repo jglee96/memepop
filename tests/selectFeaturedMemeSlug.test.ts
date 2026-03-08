@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { getAllMemes } from "@/entities/meme";
-import { selectFeaturedMemeSlug } from "@/shared/lib/selectFeaturedMemeSlug";
+import { getAllMemes, selectFeaturedMemeSlug } from "@/entities/meme";
 
 describe("selectFeaturedMemeSlug", () => {
   it("chooses meme with the highest like count", () => {

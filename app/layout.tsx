@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 
 import { AppThemeProvider } from "@/app/providers/theme-provider";
-import { getAllMemes } from "@/entities/meme";
+import { getAllMemes, selectFeaturedMemeSlug } from "@/entities/meme";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL, absoluteUrl } from "@/shared/config";
 import { getMemeLikeCounts } from "@/shared/lib/memeLikeStore";
-import { selectFeaturedMemeSlug } from "@/shared/lib/selectFeaturedMemeSlug";
 import { SiteHeader } from "@/widgets/site-header";
 
 import "./globals.css";

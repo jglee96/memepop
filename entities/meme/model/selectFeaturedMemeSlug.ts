@@ -1,4 +1,4 @@
-import type { Meme } from "@/entities/meme";
+import type { Meme } from "./types";
 
 export function selectFeaturedMemeSlug(memes: ReadonlyArray<Meme>, likeCounts: Readonly<Record<string, number>>): string {
   if (memes.length === 0) {

@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 
-import { getAllMemes } from "@/entities/meme";
+import { getAllMemes, selectFeaturedMemeSlug } from "@/entities/meme";
 import { absoluteUrl } from "@/shared/config";
 import { getMemeLikeCounts } from "@/shared/lib/memeLikeStore";
-import { selectFeaturedMemeSlug } from "@/shared/lib/selectFeaturedMemeSlug";
 import { HomeLanding } from "@/widgets/home-landing";
 
 export const metadata: Metadata = {

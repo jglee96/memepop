@@ -1,5 +1,5 @@
-import { resolveMemeGenerationSlice } from "./strategies";
 import type { PromptEnvelope } from "@/shared/security";
+import { resolveMemeGenerationSlice } from "./strategies/registry";
 
 const OPENAI_RESPONSES_API_URL = "https://api.openai.com/v1/responses";
 const OPENAI_TIMEOUT_MS = 30_000;
